@@ -9,24 +9,24 @@ class FullSignIn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("full sign in" + MediaQuery.of(context).size.width.toString());
-
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Container(
-              height: 150,
-              child: Center(
-                child: Text(
-                  "The Family App",
-                  style: TextStyle(fontSize: 40),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Container(
+                height: 150,
+                child: Center(
+                  child: Text(
+                    "The Family App",
+                    style: TextStyle(fontSize: 40),
+                  ),
                 ),
               ),
-            ),
-            SignInType()
-          ],
+              SignInType()
+            ],
+          ),
         ),
       ),
     );
