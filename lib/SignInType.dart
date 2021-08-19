@@ -1,8 +1,11 @@
 import 'package:english_words/english_words.dart';
 import 'package:family_app/ActivityBrief.dart';
 import 'package:family_app/objects/MyUser.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rounded_loading_button/rounded_loading_button.dart';
 import './objects/Activity.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:family_app/authorization/Auth.dart';
@@ -42,7 +45,11 @@ class _SignInTypeState extends State<SignInType> {
   var tween = Tween(begin: Offset(-1.0, 0.0), end: Offset(0, 0))
       .chain(CurveTween(curve: Curves.ease));
   bool _signUp = true;
+  final RoundedLoadingButtonController _loadingController =
+      RoundedLoadingButtonController();
+
   Widget build(BuildContext context) {
+    final auth = Provider.of<Auth>(context);
     return Form(
       key: _formKey,
       child: Card(
@@ -91,54 +98,145 @@ class _SignInTypeState extends State<SignInType> {
                     child: child, position: animation.drive(tween));
               },
               child: _signUp
-                  ? SignUp(
-                      controllers: allControllers,
-                    )
+                  ? SignUp(controllers: allControllers)
                   : LogIn(
                       controllers: [allControllers[0], allControllers[1]],
                     ),
             ),
-            ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    final auth = Provider.of<Auth>(context, listen: false);
-                    if (_signUp) {
+            RoundedLoadingButton(
+              controller: _loadingController,
+              onPressed: () async {
+                bool allIsOk = false;
+                if (_formKey.currentState!.validate()) {
+                  if (_signUp) {
+                    try {
                       currentUser = await auth.handleSignUp(
                           _emailController.text,
                           _passwordController.text,
                           _nameController.text);
-                    } else {
+                      allIsOk = true;
+                      _showMessageDialog(
+                        context,
+                        "Verification Link sent to your email",
+                      );
+                    } on Exception catch (e) {
+                      _showErrorDialog(
+                          context, "couldn't creat a new account", e);
+                    }
+                  } else {
+                    try {
                       currentUser = await auth.handleSignInEmail(
                           _emailController.text, _passwordController.text);
+                      allIsOk = true;
+                      // if (auth.getCurrentUser()!.emailVerified) {
+                      //   var credential = EmailAuthProvider.credential(email:_emailController.text,password: _passwordController.text );
+                      //   await auth
+                      //       .getCurrentUser()!
+                      //       .reauthenticateWithCredential(credential);
+                      // }
+                    } on Exception catch (e) {
+                      _showErrorDialog(context, "couldn't signIn", e);
                     }
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) => ActivityBrief(
-                            activity: Activity(
-                                'Eating together',
-                                70,
-                                [
-                                  'Eman Ahmed',
-                                  'Omar Yasser',
-                                  'Yasser AbdelRaouf'
-                                ],
-                                1,
-                                1))));
                   }
-                },
-                child: Text('Submit'),
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Color(0xffEA907A))))
+                }
+                _loadingController.reset();
+              },
+              child: Text('Submit'),
+              color: Color(0xffEA907A),
+              valueColor: Color(0xffF7A440),
+
+              // style: ButtonStyle(
+              //     backgroundColor:
+              //         MaterialStateProperty.all<Color>(Color(0xffEA907A)))
+            )
           ],
         ),
       ),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String title, Exception e) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 24),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  '${(e as dynamic).message}',
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'OK',
+                  // style: TextStyle(color: Colors.deepPurple),
+                ),
+                style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Color(0xffEA907A)))),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showMessageDialog(BuildContext context, String title) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 24),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  "Verify your email by clicking the link sent to be able to access your account",
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'OK',
+                  // style: TextStyle(color: Colors.deepPurple),
+                ),
+                style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Color(0xffEA907A)))),
+          ],
+        );
+      },
     );
   }
 }
 
 class LogIn extends StatelessWidget {
   final List<TextEditingController> controllers;
-  const LogIn({Key? key, required this.controllers}) : super(key: key);
+
+  const LogIn({
+    Key? key,
+    required this.controllers,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +268,11 @@ class LogIn extends StatelessWidget {
 
 class SignUp extends StatelessWidget {
   final List<TextEditingController> controllers;
-  const SignUp({Key? key, required this.controllers}) : super(key: key);
+
+  const SignUp({
+    Key? key,
+    required this.controllers,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

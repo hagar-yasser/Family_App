@@ -1,3 +1,4 @@
+import 'package:family_app/Wrapper.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
                           color: Color(0xffF7A440),
                           fontWeight: FontWeight.w100)))),
           title: 'FamilyApp trial',
-          home: FullSignIn()),
+          home: Wrapper()),
     );
   }
 }
