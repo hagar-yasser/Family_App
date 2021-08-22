@@ -15,6 +15,7 @@ class MyRoundedLoadingButton extends StatefulWidget {
 
 class _MyRoundedLoadingButtonState extends State<MyRoundedLoadingButton> {
   late final RoundedLoadingButtonController _loadingController;
+  
   @override
   void initState() {
     super.initState();
