@@ -1,15 +1,23 @@
+import 'package:family_app/MySmallRoundedButton.dart';
 import 'package:flutter/material.dart';
-import './FullActivity.dart';
-import './objects/Activity.dart';
-import './FullActivity.dart';
+
+import 'package:family_app/objects/Activity.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 
 class ActivityBrief extends StatelessWidget {
-  final Activity activity;
-  const ActivityBrief({Key? key, required this.activity}) : super(key: key);
+  final activ;
+  const ActivityBrief({Key? key, Activity? activ})
+      : this.activ = activ,
+        super(key: key);
+  static const routeName = '/activityBrief';
 
   @override
   Widget build(BuildContext context) {
+    final Activity activity = this.activ != null
+        ? this.activ
+        : ModalRoute.of(context)!.settings.arguments as Activity;
+    
     return Scaffold(
       body: Center(
         child: Scrollbar(
@@ -25,7 +33,7 @@ class ActivityBrief extends StatelessWidget {
                 height: 200,
                 width: 300,
                 child: Card(
-                  color:Colors.white,
+                  color: Colors.white,
                   elevation: 8,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -33,14 +41,16 @@ class ActivityBrief extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(32, 8.0, 8.0, 4.0),
+                            padding:
+                                const EdgeInsets.fromLTRB(32, 8.0, 8.0, 4.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Text.rich(TextSpan(
                                           text: activity.name,
@@ -60,29 +70,24 @@ class ActivityBrief extends StatelessWidget {
                                   ),
                                 ),
                                 IconButton(
-                                    color: Color(0xffF7A440),
-                                    onPressed: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  FullActivity(activity)));
-                                    },
-                                    icon: Icon(Icons.keyboard_arrow_right_rounded),iconSize: 40,)
+                                  color: Color(0xffF7A440),
+                                  onPressed: () {
+                                    Navigator.of(context).pushNamed(
+                                         '/fullActivity',
+                                        arguments: activity);
+                                  },
+                                  icon:
+                                      Icon(Icons.keyboard_arrow_right_rounded),
+                                  iconSize: 40,
+                                )
                               ],
                             ),
                           ),
                         ),
-                        ElevatedButton(
-                            onPressed: () {},
-                            child: Icon(Icons.check),
-                            style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0),
-                              side: BorderSide(color: Colors.blue),
-                            ))))
+                        MySmallRoundedButton(
+                          action: () {},
+                          child: Icon(Icons.check),
+                        )
                       ],
                     ),
                   ),

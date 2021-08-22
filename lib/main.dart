@@ -1,3 +1,5 @@
+import 'package:family_app/ActivityBrief.dart';
+import 'package:family_app/FullActivity.dart';
 import 'package:family_app/Wrapper.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -5,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import './FullSignIn.dart';
+import 'package:family_app/FullSignIn.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -24,6 +26,10 @@ class MyApp extends StatelessWidget {
         Provider<Auth>(create: (_)=>Auth())
       ],
       child: MaterialApp(
+          routes: {
+            ActivityBrief.routeName: (context)=> ActivityBrief(),
+            FullActivity.routeName: (context)=>FullActivity()
+          },
           theme: ThemeData(
               scaffoldBackgroundColor: Colors.white,
               textTheme: TextTheme(

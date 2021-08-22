@@ -1,13 +1,12 @@
 import 'package:english_words/english_words.dart';
 import 'package:family_app/ActivityBrief.dart';
+import 'package:family_app/MyRectangularButton.dart';
+import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/objects/MyUser.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rounded_loading_button/rounded_loading_button.dart';
-import './objects/Activity.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:family_app/authorization/Auth.dart';
 
 class SignInType extends StatefulWidget {
@@ -45,8 +44,7 @@ class _SignInTypeState extends State<SignInType> {
   var tween = Tween(begin: Offset(-1.0, 0.0), end: Offset(0, 0))
       .chain(CurveTween(curve: Curves.ease));
   bool _signUp = true;
-  final RoundedLoadingButtonController _loadingController =
-      RoundedLoadingButtonController();
+  
 
   Widget build(BuildContext context) {
     final auth = Provider.of<Auth>(context);
@@ -63,29 +61,25 @@ class _SignInTypeState extends State<SignInType> {
                 Spacer(
                   flex: 2,
                 ),
-                ElevatedButton(
-                    onPressed: () {
+                MyButton(
+                    action: () {
                       setState(() {
                         _signUp = true;
                       });
                     },
-                    child: Text('Sign Up'),
-                    style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                            Color(0xffEA907A)))),
+                    text:'Sign Up',
+                    ),
                 Spacer(
                   flex: 1,
                 ),
-                ElevatedButton(
-                    onPressed: () {
+                MyButton(
+                    action: () {
                       setState(() {
                         _signUp = false;
                       });
                     },
-                    child: Text('Log In'),
-                    style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                            Color(0xffEA907A)))),
+                    text: 'Log In',
+                    ),
                 Spacer(
                   flex: 2,
                 ),
@@ -103,51 +97,51 @@ class _SignInTypeState extends State<SignInType> {
                       controllers: [allControllers[0], allControllers[1]],
                     ),
             ),
-            RoundedLoadingButton(
-              controller: _loadingController,
-              onPressed: () async {
-                bool allIsOk = false;
-                if (_formKey.currentState!.validate()) {
-                  if (_signUp) {
-                    try {
-                      currentUser = await auth.handleSignUp(
-                          _emailController.text,
-                          _passwordController.text,
-                          _nameController.text);
-                      allIsOk = true;
-                      _showMessageDialog(
-                        context,
-                        "Verification Link sent to your email",
-                      );
-                    } on Exception catch (e) {
-                      _showErrorDialog(
-                          context, "couldn't creat a new account", e);
-                    }
-                  } else {
-                    try {
-                      currentUser = await auth.handleSignInEmail(
-                          _emailController.text, _passwordController.text);
-                      allIsOk = true;
-                      // if (auth.getCurrentUser()!.emailVerified) {
-                      //   var credential = EmailAuthProvider.credential(email:_emailController.text,password: _passwordController.text );
-                      //   await auth
-                      //       .getCurrentUser()!
-                      //       .reauthenticateWithCredential(credential);
-                      // }
-                    } on Exception catch (e) {
-                      _showErrorDialog(context, "couldn't signIn", e);
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 8.0),
+              child: MyRoundedLoadingButton(
+                action: () async {
+                  bool allIsOk = false;
+                  if (_formKey.currentState!.validate()) {
+                    if (_signUp) {
+                      try {
+                        currentUser = await auth.handleSignUp(
+                            _emailController.text,
+                            _passwordController.text,
+                            _nameController.text);
+                        allIsOk = true;
+                        _showMessageDialog(
+                          context,
+                          "Verification Link sent to your email",
+                        );
+                      } on Exception catch (e) {
+                        _showErrorDialog(
+                            context, "couldn't creat a new account", e);
+                      }
+                    } else {
+                      try {
+                        currentUser = await auth.handleSignInEmail(
+                            _emailController.text, _passwordController.text);
+                        allIsOk = true;
+                        // if (auth.getCurrentUser()!.emailVerified) {
+                        //   var credential = EmailAuthProvider.credential(email:_emailController.text,password: _passwordController.text );
+                        //   await auth
+                        //       .getCurrentUser()!
+                        //       .reauthenticateWithCredential(credential);
+                        // }
+                      } on Exception catch (e) {
+                        _showErrorDialog(context, "couldn't signIn", e);
+                      }
                     }
                   }
-                }
-                _loadingController.reset();
-              },
-              child: Text('Submit'),
-              color: Color(0xffEA907A),
-              valueColor: Color(0xffF7A440),
+                  
+                },
+                text:'Submit'
 
-              // style: ButtonStyle(
-              //     backgroundColor:
-              //         MaterialStateProperty.all<Color>(Color(0xffEA907A)))
+                // style: ButtonStyle(
+                //     backgroundColor:
+                //         MaterialStateProperty.all<Color>(Color(0xffEA907A)))
+              ),
             )
           ],
         ),
@@ -175,17 +169,12 @@ class _SignInTypeState extends State<SignInType> {
             ),
           ),
           actions: <Widget>[
-            ElevatedButton(
-                onPressed: () {
+            MyButton(
+                action: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text(
-                  'OK',
-                  // style: TextStyle(color: Colors.deepPurple),
-                ),
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Color(0xffEA907A)))),
+                text: 'OK'
+               ),
           ],
         );
       },
@@ -212,17 +201,12 @@ class _SignInTypeState extends State<SignInType> {
             ),
           ),
           actions: <Widget>[
-            ElevatedButton(
-                onPressed: () {
+           MyButton(
+                action: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text(
-                  'OK',
-                  // style: TextStyle(color: Colors.deepPurple),
+                text:'OK'
                 ),
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Color(0xffEA907A)))),
           ],
         );
       },

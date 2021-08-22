@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import './objects/Activity.dart';
-import 'package:google_fonts/google_fonts.dart';
 import './SignInType.dart';
 
 class FullSignIn extends StatelessWidget {
+  static const routeName = '/fullSignIn';
   const FullSignIn({Key? key}) : super(key: key);
 
   @override
