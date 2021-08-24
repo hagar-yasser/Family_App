@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/ActivityBrief.dart';
+import 'package:family_app/AddActivity.dart';
+import 'package:family_app/AddMembers.dart';
 import 'package:family_app/FullActivity.dart';
 import 'package:family_app/Wrapper.dart';
 import 'package:family_app/authorization/Auth.dart';
@@ -23,12 +26,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<Auth>(create: (_)=>Auth())
+        Provider<Auth>(create: (_)=>Auth()),
+        
       ],
       child: MaterialApp(
           routes: {
             ActivityBrief.routeName: (context)=> ActivityBrief(),
-            FullActivity.routeName: (context)=>FullActivity()
+            FullActivity.routeName: (context)=>FullActivity(),
+            AddActivity.routeName:(context)=>AddActivity(),
+            AddMembers.routeName:(context)=>AddMembers()
           },
           theme: ThemeData(
               scaffoldBackgroundColor: Colors.white,

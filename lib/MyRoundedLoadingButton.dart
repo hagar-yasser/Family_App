@@ -10,13 +10,12 @@ class MyRoundedLoadingButton extends StatefulWidget {
       : super(key: key);
 
   @override
-
-  
   _MyRoundedLoadingButtonState createState() => _MyRoundedLoadingButtonState();
 }
 
 class _MyRoundedLoadingButtonState extends State<MyRoundedLoadingButton> {
   late final RoundedLoadingButtonController _loadingController;
+  bool _isDisposed = false;
   @override
   void initState() {
     super.initState();
@@ -25,12 +24,19 @@ class _MyRoundedLoadingButtonState extends State<MyRoundedLoadingButton> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _isDisposed = true;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return RoundedLoadingButton(
       controller: _loadingController,
       onPressed: () async {
         await widget.action();
-        _loadingController.reset();
+        if (!_isDisposed) _loadingController.reset();
       },
       child: Text(widget.text),
       color: Color(0xffEA907A),
