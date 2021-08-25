@@ -62,7 +62,7 @@ class _ProfileState extends State<Profile> {
                 action: () async {
                  await authProvider.signOut();
                 },
-                text: 'Sign Out')
+                child: Text('Sign Out'))
           ],
         ),
       ),

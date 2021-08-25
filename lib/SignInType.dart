@@ -135,7 +135,7 @@ class _SignInTypeState extends State<SignInType> {
                       }
                     }
                   },
-                  text: 'Submit'
+                  child: Text( 'Submit')
 
                   // style: ButtonStyle(
                   //     backgroundColor:

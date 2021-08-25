@@ -1,3 +1,4 @@
+import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
 import 'package:flutter/material.dart';
 import 'package:family_app/objects/Activity.dart';
@@ -5,14 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 
 class FullActivity extends StatelessWidget {
   static const routeName = '/fullActivity';
-  
-  const FullActivity({Key? key}):super(key:key);
+
+  const FullActivity({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-   final activity = ModalRoute.of(context)!.settings.arguments as Activity;
-   final ScrollController _controllerOne = ScrollController();
-  
+    final activity = ModalRoute.of(context)!.settings.arguments as Map;
+    final ScrollController _controllerOne = ScrollController();
+
     return Scaffold(
       //backgroundColor: Colors.white,
       body: Center(
@@ -41,30 +42,29 @@ class FullActivity extends StatelessWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Scrollbar(
                       interactive: true,
-                      
                       showTrackOnHover: true,
-                     
                       controller: _controllerOne,
                       child: ListView(
                         controller: _controllerOne,
                         scrollDirection: Axis.horizontal,
                         children: [
-                           Text(activity.name, style: TextStyle(fontSize: 35))
+                          Text(activity['name'], style: TextStyle(fontSize: 35))
                         ],
-                        
-                        ),
+                      ),
                     ),
                   ),
                 )
-                       
               ],
             ),
-            Text(activity.percentage.toString() + '%',
+            Text(
+                (activity['points']).toString() +
+                    '/' +
+                    (activity['reportRate'] == activity['activityRate'] ? 1 :7).toString(),
                 style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
             Text('Members', style: TextStyle(fontSize: 30)),
             Padding(
               padding: const EdgeInsets.all(4.0),
-              child: ListOfMembers(activity),
+              child: ListOfMembers(activity['members']),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -75,7 +75,7 @@ class FullActivity extends StatelessWidget {
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                   TextSpan(
-                      text: 'Daily',
+                      text: activity['activityRate'],
                       style: TextStyle(
                         fontSize: 20,
                       ))
@@ -90,7 +90,9 @@ class FullActivity extends StatelessWidget {
                       text: 'Report Rate: ',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                  TextSpan(text: 'Weekly', style: TextStyle(fontSize: 20))
+                  TextSpan(
+                      text: activity['reportRate'],
+                      style: TextStyle(fontSize: 20))
                 ]),
               ),
             ),
@@ -101,15 +103,19 @@ class FullActivity extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: MySmallRoundedButton(
-                      action: () {},
+                    child: MyRoundedLoadingButton(
+                      action: () {
+                        Navigator.pop(context, "Done");
+                      },
                       child: Icon(Icons.check),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: MySmallRoundedButton(
-                      action: () {},
+                    child: MyRoundedLoadingButton(
+                      action: () {
+                        Navigator.pop(context, "Quit");
+                      },
                       child: Icon(Icons.close),
                     ),
                   )
@@ -124,12 +130,12 @@ class FullActivity extends StatelessWidget {
 }
 
 class ListOfMembers extends StatelessWidget {
-  final Activity activity;
-  const ListOfMembers(this.activity);
+  final List members;
+  const ListOfMembers(this.members);
 
   @override
   Widget build(BuildContext context) {
-     final ScrollController _controllerTwo = ScrollController();
+    final ScrollController _controllerTwo = ScrollController();
     return Container(
       height: 200,
       width: 200,
@@ -142,12 +148,12 @@ class ListOfMembers extends StatelessWidget {
           showTrackOnHover: true,
           controller: _controllerTwo,
           child: ListView.separated(
-            itemCount: activity.members.length,
+            itemCount: members.length,
             controller: _controllerTwo,
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                 title: Text(
-                  activity.members[index],
+                  members[index]['name'],
                   style: TextStyle(fontSize: 20),
                 ),
               );

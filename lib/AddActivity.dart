@@ -16,13 +16,23 @@ class _AddActivityState extends State<AddActivity> {
   TextEditingController _controller = TextEditingController();
   String _activityRateValue = "Daily";
   String _reportRateValue = "Daily";
-  List<Map>? _members;
+  late List<Map> _members;
   List<String> _reportDropDownList = ['Daily', "Weekly"];
   ScrollController _scrollController = ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    User? user = Provider.of<Auth>(context, listen: false).getCurrentUser();
+    _members = [
+      {'name': user!.displayName, 'email': user.email}
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
+
     return Scaffold(
       body: Scrollbar(
         interactive: true,
@@ -77,6 +87,7 @@ class _AddActivityState extends State<AddActivity> {
                           onPressed: () async {
                             var chosen = await Navigator.of(context)
                                 .pushNamed('/addMembers');
+
                             if (chosen != null) {
                               List<Map> chosenList = (chosen as List<Map>);
                               setState(() {
@@ -106,12 +117,11 @@ class _AddActivityState extends State<AddActivity> {
                             interactive: true,
                             showTrackOnHover: true,
                             child: ListView.separated(
-                              itemCount:
-                                  _members != null ? _members!.length : 0,
+                              itemCount: _members.length,
                               itemBuilder: (BuildContext context, int index) {
                                 return ListTile(
                                   title: Text(
-                                    _members![index]['name'],
+                                    _members[index]['name'],
                                     style: TextStyle(fontSize: 20),
                                   ),
                                 );
@@ -212,27 +222,43 @@ class _AddActivityState extends State<AddActivity> {
                       padding: EdgeInsets.all(20.0),
                       child: MyRoundedLoadingButton(
                           action: () async {
-                            final userInDB = await firestore
-                                .collection('Users')
-                                .where('email', isEqualTo: user!.email)
-                                .get();
-                            final updatedActivities=userInDB.docs[0]['activities'] as List;
-                            updatedActivities.add({
+                            if (_controller.text == null ||
+                                _controller.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          'Please enter the activity name!')));
+                            } else {
+                              final userInDB = await firestore
+                                  .collection('Users')
+                                  .where('email', isEqualTo: user!.email)
+                                  .get();
+                              final updatedActivities =
+                                  userInDB.docs[0]['activities'] as List;
+                              final timeAdded = new DateTime.now().toUtc();
+                              final endTime = timeAdded
+                                  .add(new Duration(
+                                      days:
+                                          _reportRateValue == "Daily" ? 1 : 7))
+                                  .toUtc();
+                             
+                              updatedActivities.add({
                                 'name': _controller.text,
-                                'percentage': 0,
+                                'points': 0,
                                 'members': _members,
                                 'activityRate': _activityRateValue,
-                                'reportRate': _reportRateValue
+                                'reportRate': _reportRateValue,
+                                'timeAdded': timeAdded,
+                                'endTime': endTime
                               });
-                            await firestore
-                                .collection('Users')
-                                .doc(userInDB.docs[0].id)
-                                .update({
-                              'activities': updatedActivities
-                            });
-                            Navigator.pop(context);
+                              await firestore
+                                  .collection('Users')
+                                  .doc(userInDB.docs[0].id)
+                                  .update({'activities': updatedActivities});
+                              Navigator.pop(context);
+                            }
                           },
-                          text: "Add"),
+                          child: Text("Add")),
                     )
                   ],
                 ),

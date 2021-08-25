@@ -3,6 +3,7 @@ import 'package:family_app/ActivityBrief.dart';
 import 'package:family_app/AddActivity.dart';
 import 'package:family_app/AddMembers.dart';
 import 'package:family_app/FullActivity.dart';
+import 'package:family_app/Reports.dart';
 import 'package:family_app/Wrapper.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -34,7 +35,8 @@ class MyApp extends StatelessWidget {
             ActivityBrief.routeName: (context)=> ActivityBrief(),
             FullActivity.routeName: (context)=>FullActivity(),
             AddActivity.routeName:(context)=>AddActivity(),
-            AddMembers.routeName:(context)=>AddMembers()
+            AddMembers.routeName:(context)=>AddMembers(),
+            Reports.routeName:(context)=>Reports()
           },
           theme: ThemeData(
               scaffoldBackgroundColor: Colors.white,

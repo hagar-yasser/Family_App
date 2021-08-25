@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
 class MyRoundedLoadingButton extends StatefulWidget {
-  final text;
+  final child;
   final action;
 
   const MyRoundedLoadingButton(
-      {Key? key, required this.action, required this.text})
+      {Key? key, required this.action, required this.child})
       : super(key: key);
 
   @override
@@ -38,7 +38,7 @@ class _MyRoundedLoadingButtonState extends State<MyRoundedLoadingButton> {
         await widget.action();
         if (!_isDisposed) _loadingController.reset();
       },
-      child: Text(widget.text),
+      child: widget.child,
       color: Color(0xffEA907A),
       valueColor: Color(0xffF7A440),
       width: 150,
