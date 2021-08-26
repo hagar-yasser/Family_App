@@ -19,23 +19,13 @@ class ActivityBrief extends StatefulWidget {
 }
 
 class _ActivityBriefState extends State<ActivityBrief> {
- 
-
-  // Future<QuerySnapshot> getUserAndCheckActivities(
-  //     FirebaseFirestore firestore, User? user) async {
-  //   Future<QuerySnapshot> snapshot = firestore
-  //       .collection('Users')
-  //       .where('email', isEqualTo: user!.email)
-  //       .get();
-  //   QuerySnapshot mySnapshot = await snapshot;
-  //   await checkActivitiesStates(firestore, mySnapshot.docs[0].id);
-  //   return snapshot;
-  // }
+  ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
+    String myEmail = user!.email!.replaceAll('.', '_');
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
@@ -45,20 +35,19 @@ class _ActivityBriefState extends State<ActivityBrief> {
           Navigator.of(context).pushNamed('/addActivity');
         },
       ),
-      body: FutureBuilder<QuerySnapshot>(
-        future: firestore
-        .collection('Users')
-        .where('email', isEqualTo: user!.email)
-        .get(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: firestore
+            .collection('Users')
+            .where('email', isEqualTo: myEmail)
+            .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
             return Text("Something went wrong");
           }
-          // if (snapshot.data != null &&
-          //     snapshot.data!.docs[0]['activities'].length == 0) {
-          //   return Center();
-          // }
-          if (snapshot.connectionState == ConnectionState.waiting) {
+
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              !snapshot.hasData ||
+              snapshot.data!.docs.length == 0) {
             return Center(child: CircularProgressIndicator());
           }
 
@@ -69,32 +58,39 @@ class _ActivityBriefState extends State<ActivityBrief> {
                   .snapshots(),
               builder: (BuildContext context,
                   AsyncSnapshot<DocumentSnapshot> docSnapshot) {
-                if (docSnapshot.hasError || docSnapshot.data == null) {
-                  return Text(
-                      'Something went wrong when loading the user data');
+                if (docSnapshot.hasError) {
+                  return Center(
+                    child:
+                        Text('Something went wrong when loading the user data'),
+                  );
                 }
-                if (docSnapshot.connectionState == ConnectionState.waiting) {
-                  return Text('loading User data');
+                if (docSnapshot.connectionState == ConnectionState.waiting ||
+                    !docSnapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
                 }
                 return Center(
                   child: RefreshIndicator(
                     onRefresh: () async {
-                      setState(() {
-                      });
+                      setState(() {});
                     },
                     child: Scrollbar(
                       isAlwaysShown: true,
+                      controller: _scrollController,
                       interactive: true,
                       showTrackOnHover: true,
                       child: ListView.separated(
                         separatorBuilder: (BuildContext context, int index) =>
                             const Divider(),
+                        controller: _scrollController,
                         itemCount: docSnapshot.data!['activities'].length ?? 0,
                         itemBuilder: (BuildContext context, int index) {
-                          List activities = docSnapshot.data!['activities'];
-                          List members = activities[index]['members'] != null
-                              ? activities[index]['members'] as List
-                              : [];
+                          Map activities = docSnapshot.data!['activities'];
+                          List activitiesIDs = [];
+                          activities.forEach((key, value) {
+                            activitiesIDs.add(key);
+                          });
+                          Map members = activities[activitiesIDs[index]]
+                              ['members'] as Map;
                           return Container(
                             height: 200,
                             width: 300,
@@ -121,20 +117,22 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                     CrossAxisAlignment.center,
                                                 children: [
                                                   Text.rich(TextSpan(
-                                                      text: activities[index]
-                                                          ['name'],
+                                                      text: activities[
+                                                          activitiesIDs[
+                                                              index]]['name'],
                                                       style: TextStyle(
                                                           fontSize: 20))),
                                                   Text(
-                                                      (activities[index]
+                                                      (activities[activitiesIDs[index]]
+                                                                          ['members']
+                                                                      [myEmail]
                                                                   ['points'])
                                                               .toString() +
                                                           "/" +
-                                                          (activities[index]
-                                                                          [
+                                                          (activities[activitiesIDs[index]][
                                                                           'reportRate'] ==
                                                                       activities[
-                                                                              index]
+                                                                              activitiesIDs[index]]
                                                                           [
                                                                           'activityRate']
                                                                   ? 1
@@ -147,7 +145,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                   Container(
                                                     width: 200,
                                                     child: Text(
-                                                      expandListOfStrings(
+                                                      expandToListOfStrings(
                                                           (members)),
                                                       overflow:
                                                           TextOverflow.ellipsis,
@@ -163,27 +161,45 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                     await Navigator.of(context)
                                                         .pushNamed(
                                                             '/fullActivity',
-                                                            arguments:
-                                                                activities[
-                                                                    index]);
+                                                            arguments: activities[
+                                                                activitiesIDs[
+                                                                    index]]);
                                                 print(actionInsideFullActivity);
                                                 if (actionInsideFullActivity !=
                                                     null) {
                                                   if (actionInsideFullActivity ==
                                                       "Done") {
                                                     checkActivityDone(
-                                                        activities,
-                                                        index,
+                                                        activities[
+                                                            activitiesIDs[
+                                                                index]],
+                                                        activitiesIDs[index],
+                                                        myEmail,
                                                         firestore,
                                                         docSnapshot);
                                                   } else {
-                                                    activities.removeAt(index);
+                                                    //REMOVE ME FROM THE LIST OF MEMBERS OF THIS ACTIVITY IN THE ACTIVITIES TABLE
+                                                    await firestore
+                                                        .collection(
+                                                            'Activities')
+                                                        .doc(activitiesIDs[
+                                                            index])
+                                                        .update({
+                                                      'members.' + myEmail:
+                                                          FieldValue.delete()
+                                                    });
+                                                    //REMOVE THIS ACTIVITY FROM MY ACTIVITIES IN THE USER TABLE
+                                                    activities.remove(
+                                                        activitiesIDs[index]);
                                                     await firestore
                                                         .collection("Users")
                                                         .doc(docSnapshot
                                                             .data!.id)
                                                         .update({
-                                                      'activities': activities
+                                                      'activities.' +
+                                                              activitiesIDs[
+                                                                  index]:
+                                                          FieldValue.delete()
                                                     });
                                                   }
                                                 }
@@ -198,8 +214,12 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                     ),
                                     MyRoundedLoadingButton(
                                       action: () async {
-                                        await checkActivityDone(activities,
-                                            index, firestore, docSnapshot);
+                                        await checkActivityDone(
+                                            activities[activitiesIDs[index]],
+                                            activitiesIDs[index],
+                                            myEmail,
+                                            firestore,
+                                            docSnapshot);
                                       },
                                       child: Icon(Icons.check),
                                     )
@@ -219,43 +239,47 @@ class _ActivityBriefState extends State<ActivityBrief> {
     );
   }
 
-  Future<void> checkActivityDone(
-      activities, index, firestore, docSnapshot) async {
+  Future<void> checkActivityDone(Map activity, activityID, email,
+      FirebaseFirestore firestore, docSnapshot) async {
     DateTime clickedTime = DateTime.now().toUtc();
-    DateTime? lastDone = (activities[index]['lastDone']) == null
-        ? null
-        : (activities[index]['lastDone']).toDate();
-    DateTime timeAdded = (activities[index]['timeAdded']).toDate();
-    DateTime endTime = (activities[index]['endTime']).toDate();
+    DateTime? lastDone =
+        (activity['lastDone']) == null ? null : (activity['lastDone']).toDate();
+    DateTime timeAdded = (activity['timeAdded']).toDate();
+    DateTime endTime = (activity['endTime']).toDate();
     if (endTime.compareTo(clickedTime) > 0 &&
         (lastDone == null ||
-            (activities[index]['activityRate'] == 'Daily' &&
+            (activity['activityRate'] == 'Daily' &&
                 dayFromTo(timeAdded, lastDone) !=
                     dayFromTo(timeAdded, clickedTime)))) {
-      final previousPoints = activities[index]['points'];
-      activities[index]['points'] = previousPoints + 1;
-      activities[index]['lastDone'] = clickedTime;
+      final previousPoints = activity['members'][email]['points'];
+      activity['members'][email]['points'] = previousPoints + 1;
+      activity['lastDone'] = clickedTime;
+      //UPDATE THE ACTIVITY.ID IN THE ACTIVITIES TABLE WITH MY POINTS
+      await firestore.collection('Activities').doc(activityID).update({
+        'members.' + email + '.points': activity['members'][email]['points']
+      });
+      //UPDATE MY ACTIVITY IN THE USERS TABLE
       await firestore
           .collection("Users")
           .doc(docSnapshot.data!.id)
-          .update({'activities': activities});
+          .update({'activities.' + activityID: activity});
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Activty already checked for this " +
-              (activities[index]['activityRate'] == 'Daily'
-                  ? "Day"
-                  : "Week"))));
+              (activity['activityRate'] == 'Daily' ? "Day" : "Week"))));
     }
   }
 
-  String expandListOfStrings(List list) {
+  String expandToListOfStrings(Map map) {
     String result = "";
-    for (int i = 0; i < list.length; i++) {
-      result += list[i]!['name'];
-      if (i < list.length - 1) {
+    int count = 0;
+    map.forEach((key, value) {
+      result += map[key]['name'];
+      if (count < map.length - 1) {
         result += ", ";
       }
-    }
+      count++;
+    });
     return result;
   }
 

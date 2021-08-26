@@ -30,7 +30,7 @@ class Auth {
         await auth.signInWithEmailAndPassword(email: email, password: password);
     final User user = result.user!;
     if (!user.emailVerified) {
-      auth.signOut();
+      await auth.signOut();
       throw new Exception("Account email not verified yet");
     } else {
       await checkIfUserAddedToDB(user);
@@ -49,16 +49,15 @@ class Auth {
     final name=user.displayName;
     final userAddedToDatabase = await firestore
         .collection("Users")
-        .where('email', isEqualTo: email)
+        .where('email', isEqualTo: email!.replaceAll('.', '_'))
         .get();
     if (userAddedToDatabase.docs.length == 0) {
       await firestore.collection('Users').add({
-        'email': email,
+        'email': email.replaceAll('.', '_'),
         'name': name,
-        'friends': [],
-        'activities': [],
-        'reports': [],
-        'familyRequests': []
+        'family': {},
+        'activities': {},
+        'familyRequests': {}
       });
     }
   }

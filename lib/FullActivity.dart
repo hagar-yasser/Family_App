@@ -1,8 +1,12 @@
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:family_app/objects/Activity.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import 'authorization/Auth.dart';
 
 class FullActivity extends StatelessWidget {
   static const routeName = '/fullActivity';
@@ -13,7 +17,8 @@ class FullActivity extends StatelessWidget {
   Widget build(BuildContext context) {
     final activity = ModalRoute.of(context)!.settings.arguments as Map;
     final ScrollController _controllerOne = ScrollController();
-
+    User? user = Provider.of<Auth>(context).getCurrentUser();
+    String myEmail = user!.email!.replaceAll('.', '_');
     return Scaffold(
       //backgroundColor: Colors.white,
       body: Center(
@@ -57,9 +62,10 @@ class FullActivity extends StatelessWidget {
               ],
             ),
             Text(
-                (activity['points']).toString() +
+                (activity["members"][myEmail]['points']).toString() +
                     '/' +
-                    (activity['reportRate'] == activity['activityRate'] ? 1 :7).toString(),
+                    (activity['reportRate'] == activity['activityRate'] ? 1 : 7)
+                        .toString(),
                 style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
             Text('Members', style: TextStyle(fontSize: 30)),
             Padding(
@@ -130,12 +136,16 @@ class FullActivity extends StatelessWidget {
 }
 
 class ListOfMembers extends StatelessWidget {
-  final List members;
+  final Map members;
   const ListOfMembers(this.members);
 
   @override
   Widget build(BuildContext context) {
     final ScrollController _controllerTwo = ScrollController();
+    List membersList = [];
+    members.forEach((key, value) {
+      membersList.add(key);
+    });
     return Container(
       height: 200,
       width: 200,
@@ -148,12 +158,12 @@ class ListOfMembers extends StatelessWidget {
           showTrackOnHover: true,
           controller: _controllerTwo,
           child: ListView.separated(
-            itemCount: members.length,
+            itemCount: membersList.length,
             controller: _controllerTwo,
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                 title: Text(
-                  members[index]['name'],
+                  members[membersList[index]]['name'],
                   style: TextStyle(fontSize: 20),
                 ),
               );

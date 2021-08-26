@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/authorization/Auth.dart';
+import 'package:family_app/objects/Activity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,16 +17,18 @@ class _AddActivityState extends State<AddActivity> {
   TextEditingController _controller = TextEditingController();
   String _activityRateValue = "Daily";
   String _reportRateValue = "Daily";
-  late List<Map> _members;
+  late Map _members;
+  late String myEmail;
   List<String> _reportDropDownList = ['Daily', "Weekly"];
   ScrollController _scrollController = ScrollController();
   @override
   void initState() {
     super.initState();
     User? user = Provider.of<Auth>(context, listen: false).getCurrentUser();
-    _members = [
-      {'name': user!.displayName, 'email': user.email}
-    ];
+    myEmail = user!.email!.replaceAll('.', '_');
+    _members = {
+      myEmail: {'name': user.displayName, 'points': 0}
+    };
   }
 
   @override
@@ -87,13 +90,10 @@ class _AddActivityState extends State<AddActivity> {
                           onPressed: () async {
                             var chosen = await Navigator.of(context)
                                 .pushNamed('/addMembers');
-
-                            if (chosen != null) {
-                              List<Map> chosenList = (chosen as List<Map>);
-                              setState(() {
-                                _members = chosenList;
-                              });
-                            }
+                            Map chosenMap = (chosen as Map);
+                            setState(() {
+                              _members = chosenMap;
+                            });
                           },
                           label: Text('Add Members'),
                           style: ButtonStyle(
@@ -119,9 +119,14 @@ class _AddActivityState extends State<AddActivity> {
                             child: ListView.separated(
                               itemCount: _members.length,
                               itemBuilder: (BuildContext context, int index) {
+                                final List membersEmailsList = [];
+                                _members.forEach((key, value) {
+                                  membersEmailsList.add(key);
+                                });
                                 return ListTile(
                                   title: Text(
-                                    _members[index]['name'],
+                                    //members is a map not a list
+                                    _members[membersEmailsList[index]]['name'],
                                     style: TextStyle(fontSize: 20),
                                   ),
                                 );
@@ -231,30 +236,33 @@ class _AddActivityState extends State<AddActivity> {
                             } else {
                               final userInDB = await firestore
                                   .collection('Users')
-                                  .where('email', isEqualTo: user!.email)
+                                  .where('email', isEqualTo: myEmail)
                                   .get();
-                              final updatedActivities =
-                                  userInDB.docs[0]['activities'] as List;
                               final timeAdded = new DateTime.now().toUtc();
                               final endTime = timeAdded
                                   .add(new Duration(
                                       days:
                                           _reportRateValue == "Daily" ? 1 : 7))
                                   .toUtc();
-                             
-                              updatedActivities.add({
+                              //add the activity to the activity Collection
+                              final newActivity = {
                                 'name': _controller.text,
-                                'points': 0,
                                 'members': _members,
                                 'activityRate': _activityRateValue,
                                 'reportRate': _reportRateValue,
                                 'timeAdded': timeAdded,
                                 'endTime': endTime
-                              });
+                              };
+                              final activityRef = await firestore
+                                  .collection('Activities')
+                                  .add(newActivity);
+                              final activityID = activityRef.id;
                               await firestore
                                   .collection('Users')
                                   .doc(userInDB.docs[0].id)
-                                  .update({'activities': updatedActivities});
+                                  .update({
+                                ('activities.' + activityID): newActivity
+                              });
                               Navigator.pop(context);
                             }
                           },

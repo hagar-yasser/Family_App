@@ -13,17 +13,27 @@ class AddMembers extends StatefulWidget {
 }
 
 class _AddMembersState extends State<AddMembers> {
-   List<Map> _chosenMembers=[];
+  late Map _chosenMembers;
+  late String myEmail;
+  void initState() {
+    super.initState();
+    User? user = Provider.of<Auth>(context, listen: false).getCurrentUser();
+    myEmail = user!.email!.replaceAll('.', '_');
+    _chosenMembers = {
+      myEmail: {'name': user.displayName, 'points': 0}
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
-   
+
     return Scaffold(
       body: FutureBuilder<QuerySnapshot>(
         future: firestore
             .collection('Users')
-            .where('email', isEqualTo: user!.email)
+            .where('email', isEqualTo: myEmail)
             .get(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
@@ -33,6 +43,11 @@ class _AddMembersState extends State<AddMembers> {
             return Center(child: CircularProgressIndicator());
           }
 
+          final Map family = snapshot.data!.docs[0]['family'];
+          final List familyEmailsList = [];
+          family.forEach((key, value) {
+            familyEmailsList.add(key);
+          });
           return Padding(
             padding: const EdgeInsets.all(20.0),
             child: Scrollbar(
@@ -65,7 +80,7 @@ class _AddMembersState extends State<AddMembers> {
                         height: MediaQuery.of(context).size.height * 0.8,
                         width: MediaQuery.of(context).size.width * 0.8,
                         child: (snapshot.data == null ||
-                                snapshot.data!.docs[0]['friends'].length == 0)
+                                familyEmailsList.length == 0)
                             ? Center()
                             : Scrollbar(
                                 interactive: true,
@@ -74,34 +89,34 @@ class _AddMembersState extends State<AddMembers> {
                                   separatorBuilder:
                                       (BuildContext context, int index) =>
                                           const Divider(),
-                                  itemCount:
-                                      snapshot.data!.docs[0]['friends'].length,
+                                  itemCount: familyEmailsList.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     return GestureDetector(
                                       child: Card(
-                                        color: _chosenMembers.contains(snapshot
-                                                .data!
-                                                .docs[0]['friends'][index])
+                                        color: _chosenMembers[
+                                                    familyEmailsList[index]] !=
+                                                null
                                             ? Color(0xffEA907A)
                                             : Colors.white,
                                         elevation: 8,
                                         child: Text(
-                                          snapshot.data!
-                                              .docs[0]['friends'][index].name,
+                                          family[familyEmailsList[index]]
+                                              ['name'],
                                           style: TextStyle(fontSize: 20),
                                         ),
                                       ),
                                       onTap: () {
                                         setState(() {
-                                          if (_chosenMembers.contains(snapshot
-                                              .data!
-                                              .docs[0]['friends'][index])) {
-                                            _chosenMembers.remove(snapshot.data!
-                                                .docs[0]['friends'][index]);
+                                          if (_chosenMembers[
+                                                  familyEmailsList[index]] !=
+                                              null) {
+                                            _chosenMembers.remove(
+                                                familyEmailsList[index]);
                                           } else {
-                                            _chosenMembers.add(snapshot.data!
-                                                .docs[0]['friends'][index]);
+                                            _chosenMembers[
+                                                    familyEmailsList[index]] =
+                                                family[familyEmailsList[index]];
                                           }
                                         });
                                       },

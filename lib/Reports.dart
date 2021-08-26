@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:family_app/authorization/Auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Reports extends StatefulWidget {
   const Reports({Key? key}) : super(key: key);
@@ -10,58 +13,96 @@ class Reports extends StatefulWidget {
 }
 
 class _ReportsState extends State<Reports> {
-  Future<void> checkActivitiesStates(FirebaseFirestore firestore, id) async {
-    DocumentSnapshot myDoc = await firestore.collection('Users').doc(id).get();
-    List activities = myDoc['activities'];
-    List reports = myDoc['reports'] == null ? [] : myDoc['reports'];
+  ScrollController _scrollController = ScrollController();
+  Future<DocumentSnapshot> checkActivitiesStates(
+      FirebaseFirestore firestore, String email) async {
+    QuerySnapshot myQuery = await firestore
+        .collection('Users')
+        .where('email', isEqualTo: email)
+        .get();
+    DocumentSnapshot myDoc = myQuery.docs[0];
+    String id = myDoc.id;
+    Map activities = myDoc['activities'];
+    List activitiesIDs = [];
+    activities.forEach((key, value) {
+      activitiesIDs.add(key);
+    });
     DateTime now = DateTime.now().toUtc();
-    for (int i = 0; i < activities.length; i++) {
-      if (now.compareTo(activities[i]['endTime'].toDate()) > 0) {
-        List scores = [];
-        scores.add({
-          myDoc['email']: (activities[i]['points']).toString() +
-              '/' +
-              (activities[i]['reportRate'] == activities[i]['activityRate']
-                      ? 1
-                      : 7)
-                  .toString()
-        });
-        List members = activities[i]['members'];
-        // first member is me
-        List docIdsOfMembers = [];
-        List reportsOfMembers = [];
-        for (int i = 1; i < members.length; i++) {
-          QuerySnapshot myQuery = await firestore
-              .collection("Users")
-              .where('email', isEqualTo: members[i]['email'])
-              .get();
-          docIdsOfMembers.add(myQuery.docs[0].id);
-          reportsOfMembers.add(myQuery.docs[0]['reports']);
-          List activitiesOfMember = myQuery.docs[0]['activities'];
-          Map myActivity = activitiesOfMember
-              .firstWhere((element) => element['id'] == activities[i]['id']);
-          scores.add({
-            members[i]['email']: (myActivity['points']).toString() +
-                '/' +
-                (myActivity['reportRate'] == myActivity['activityRate'] ? 1 : 7)
-                    .toString()
-          });
-        }
-        reports.add({'activity': activities[i], 'scores': scores});
-        for (int i = 0; i < docIdsOfMembers.length; i++) {
-          reportsOfMembers[i]
-              .add({'activity': activities[i], 'scores': scores});
-          await firestore
-              .collection('User')
-              .doc(docIdsOfMembers[i])
-              .update({'reports': reportsOfMembers[i]});
-        }
+    for (int i = 0; i < activitiesIDs.length; i++) {
+      if (now.compareTo(activities[activitiesIDs[i]]['endTime'].toDate()) > 0) {
+        DocumentSnapshot activityOriginal = await firestore
+            .collection('Activities')
+            .doc(activitiesIDs[i])
+            .get();
+        Map members = activityOriginal['members'];
+        await firestore
+            .collection('Users')
+            .doc(id)
+            .update({'activities.' + activitiesIDs[i]: FieldValue.delete()});
+        await firestore
+            .collection('Users')
+            .doc(id)
+            .update({'reports.' + activitiesIDs[i]: members});
+        await firestore
+            .collection('Activities')
+            .doc(activitiesIDs[i])
+            .update({'reportsSent.' + myDoc['email']: true});
       }
     }
+    return firestore.collection('Users').doc(id).get();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User? user = Provider.of<Auth>(context).getCurrentUser();
+    String myEmail = user!.email!.replaceAll('.', '_');
+    return FutureBuilder(
+      future: checkActivitiesStates(firestore, myEmail),
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+     
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            !snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('An Error occurred when fetching reports'),
+          );
+        }
+        Map? reports = (snapshot.data!.data()! as Map)['reports'];
+        List reportsIDs = [];
+        if (reports != null) {
+          reports.forEach((key, value) {
+            reportsIDs.add(key);
+          });
+        }
+        return Center(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              setState(() {});
+            },
+            child: Scrollbar(
+              controller: _scrollController,
+              isAlwaysShown: true,
+              interactive: true,
+              showTrackOnHover: true,
+              child: ListView.separated(
+                controller: _scrollController,
+                separatorBuilder: (BuildContext context, int index) =>
+                    const Divider(),
+                itemCount: reportsIDs.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Center();
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
