@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/ActivityBrief.dart';
 import 'package:family_app/Profile.dart';
-import 'package:family_app/Reports.dart';
+import 'package:family_app/ReportsBrief.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:family_app/objects/Activity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -61,7 +61,7 @@ class _MyScaffoldState extends State<MyScaffold> {
       //     activ: Activity('Eating together', 70,
       //         ['Eman Ahmed', 'Omar Yasser', 'Yasser AbdelRaouf'], 1, 1));
       case 1:
-        return Reports();
+        return ReportsBrief();
       case 2:
         return Profile();
 

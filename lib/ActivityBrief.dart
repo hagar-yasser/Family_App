@@ -81,6 +81,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
                       child: ListView.separated(
                         separatorBuilder: (BuildContext context, int index) =>
                             const Divider(),
+                        physics: AlwaysScrollableScrollPhysics(),
                         controller: _scrollController,
                         itemCount: docSnapshot.data!['activities'].length ?? 0,
                         itemBuilder: (BuildContext context, int index) {
