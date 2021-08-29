@@ -257,12 +257,26 @@ class _AddActivityState extends State<AddActivity> {
                                   .collection('Activities')
                                   .add(newActivity);
                               final activityID = activityRef.id;
-                              await firestore
-                                  .collection('Users')
-                                  .doc(userInDB.docs[0].id)
-                                  .update({
-                                ('activities.' + activityID): newActivity
+                              _members.forEach((key, value) async {
+                                var member = await firestore
+                                    .collection('Users')
+                                    .where('email', isEqualTo: key)
+                                    .get();
+                                DocumentSnapshot myMember = member.docs[0];
+                                await firestore
+                                    .collection('Users')
+                                    .doc(myMember.id)
+                                    .update({
+                                  ('activities.' + activityID): newActivity
+                                });
                               });
+
+                              // await firestore
+                              //     .collection('Users')
+                              //     .doc(userInDB.docs[0].id)
+                              //     .update({
+                              //   ('activities.' + activityID): newActivity
+                              // });
                               Navigator.pop(context);
                             }
                           },
