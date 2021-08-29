@@ -21,108 +21,121 @@ class FullActivity extends StatelessWidget {
     String myEmail = user!.email!.replaceAll('.', '_');
     return Scaffold(
       //backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: Scrollbar(
+        interactive: true,
+        showTrackOnHover: true,
+        child: ListView(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
-                  child: IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Icon(
-                        Icons.keyboard_arrow_left_rounded,
-                        color: Color(0xffF7A440),
-                        size: 50,
-                      )),
-                ),
-                SizedBox(
-                  width: 270,
-                  height: 80,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Scrollbar(
-                      interactive: true,
-                      showTrackOnHover: true,
-                      controller: _controllerOne,
-                      child: ListView(
-                        controller: _controllerOne,
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          Text(activity['name'], style: TextStyle(fontSize: 35))
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-            Text(
-                (activity["members"][myEmail]['points']).toString() +
-                    '/' +
-                    (activity['reportRate'] == activity['activityRate'] ? 1 : 7)
-                        .toString(),
-                style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
-            Text('Members', style: TextStyle(fontSize: 30)),
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: ListOfMembers(activity['members']),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text.rich(
-                TextSpan(children: [
-                  TextSpan(
-                      text: 'Activity Rate: ',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                  TextSpan(
-                      text: activity['activityRate'],
-                      style: TextStyle(
-                        fontSize: 20,
-                      ))
-                ]),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text.rich(
-                TextSpan(children: [
-                  TextSpan(
-                      text: 'Report Rate: ',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                  TextSpan(
-                      text: activity['reportRate'],
-                      style: TextStyle(fontSize: 20))
-                ]),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
+            Center(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
+                        child: IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: Icon(
+                              Icons.keyboard_arrow_left_rounded,
+                              color: Color(0xffF7A440),
+                              size: 50,
+                            )),
+                      ),
+                      SizedBox(
+                        width: 270,
+                        height: 80,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Scrollbar(
+                            interactive: true,
+                            showTrackOnHover: true,
+                            controller: _controllerOne,
+                            child: ListView(
+                              controller: _controllerOne,
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                Text(activity['name'],
+                                    style: TextStyle(fontSize: 35))
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  Text(
+                      (activity["members"][myEmail]['points']).toString() +
+                          '/' +
+                          (activity['reportRate'] == activity['activityRate']
+                                  ? 1
+                                  : 7)
+                              .toString(),
+                      style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
+                  Text("End Time: "+displayTime(activity['endTime'].toDate()),
+                      style: TextStyle(color: Color(0xffAACDBE), fontSize: 20)),
+                  Text('Members', style: TextStyle(fontSize: 30)),
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: ListOfMembers(activity['members']),
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: MyRoundedLoadingButton(
-                      action: () {
-                        Navigator.pop(context, "Done");
-                      },
-                      child: Icon(Icons.check),
+                    child: Text.rich(
+                      TextSpan(children: [
+                        TextSpan(
+                            text: 'Activity Rate: ',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 20)),
+                        TextSpan(
+                            text: activity['activityRate'],
+                            style: TextStyle(
+                              fontSize: 20,
+                            ))
+                      ]),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: MyRoundedLoadingButton(
-                      action: () {
-                        Navigator.pop(context, "Quit");
-                      },
-                      child: Icon(Icons.close),
+                    child: Text.rich(
+                      TextSpan(children: [
+                        TextSpan(
+                            text: 'Report Rate: ',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 20)),
+                        TextSpan(
+                            text: activity['reportRate'],
+                            style: TextStyle(fontSize: 20))
+                      ]),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: MyRoundedLoadingButton(
+                            action: () {
+                              Navigator.pop(context, "Done");
+                            },
+                            child: Icon(Icons.check),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: MyRoundedLoadingButton(
+                            action: () {
+                              Navigator.pop(context, "Quit");
+                            },
+                            child: Icon(Icons.close),
+                          ),
+                        )
+                      ],
                     ),
                   )
                 ],
@@ -132,6 +145,12 @@ class FullActivity extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String displayTime(DateTime time) {
+    String res = "";
+    res +="${time.year}-${time.month}-${time.day} ${time.hour}:${time.minute}";
+    return res;
   }
 }
 
