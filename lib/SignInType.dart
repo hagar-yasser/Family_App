@@ -105,11 +105,12 @@ class _SignInTypeState extends State<SignInType> {
                     if (_formKey.currentState!.validate()) {
                       if (_signUp) {
                         try {
-                          currentUser = await auth.handleSignUp(
+                          await auth.handleSignUp(
                               _emailController.text,
                               _passwordController.text,
                               _nameController.text);
                           allIsOk = true;
+
                           _showMessageDialog(
                             context,
                             "Verification Link sent to your email",

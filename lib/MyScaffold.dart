@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/ActivityBrief.dart';
+import 'package:family_app/Family.dart';
 import 'package:family_app/Profile.dart';
 import 'package:family_app/ReportsBrief.dart';
 import 'package:family_app/authorization/Auth.dart';
@@ -26,6 +27,7 @@ class _MyScaffoldState extends State<MyScaffold> {
     return Scaffold(
       body: currentPage(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
+         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -34,6 +36,10 @@ class _MyScaffoldState extends State<MyScaffold> {
           BottomNavigationBarItem(
             icon: Icon(Icons.description_rounded),
             label: 'Reports',
+          ),
+           BottomNavigationBarItem(
+            icon: Icon(Icons.groups_rounded),
+            label: 'Family',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -63,6 +69,8 @@ class _MyScaffoldState extends State<MyScaffold> {
       case 1:
         return ReportsBrief();
       case 2:
+        return Family();
+      case 3:
         return Profile();
 
       default:

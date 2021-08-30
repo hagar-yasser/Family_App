@@ -62,7 +62,7 @@ class Auth {
     }
   }
 
-  Future<MyUser?> handleSignUp(email, password, name) async {
+  Future<void> handleSignUp(email, password, name) async {
     UserCredential result = await auth.createUserWithEmailAndPassword(
         email: email, password: password);
     await result.user!.updateDisplayName(name);
@@ -71,7 +71,7 @@ class Auth {
 
     final User user = result.user!;
 
-    return convertFirbaseUser(user);
+    return await auth.signOut();
   }
 
   void printCurrentUserEmail() {
