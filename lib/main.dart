@@ -7,6 +7,7 @@ import 'package:family_app/FullReport.dart';
 import 'package:family_app/ReportsBrief.dart';
 import 'package:family_app/Wrapper.dart';
 import 'package:family_app/authorization/Auth.dart';
+import 'package:family_app/database/MyDocument.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<Auth>(create: (_)=>Auth()),
+        Provider<MyDocument>(create: (_)=>MyDocument(),)
         
       ],
       child: MaterialApp(

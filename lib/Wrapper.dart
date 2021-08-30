@@ -25,7 +25,7 @@ class Wrapper extends StatelessWidget {
             final MyUser? user = snapshot.data;
             if (user != null && authProvider.getCurrentUser()!.emailVerified) {
               print(user.email);
-              return MyScaffold();
+              return MyScaffoldWrapper();
             } else {
               // authProvider.signOut();
               return FullSignIn();

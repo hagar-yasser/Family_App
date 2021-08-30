@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
 import 'package:family_app/authorization/Auth.dart';
+import 'package:family_app/database/MyDocument.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +27,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
     String myEmail = user!.email!.replaceAll('.', '_');
+    String? id =Provider.of<MyDocument>(context).id;
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
@@ -35,26 +37,10 @@ class _ActivityBriefState extends State<ActivityBrief> {
           Navigator.of(context).pushNamed('/addActivity');
         },
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: firestore
-            .collection('Users')
-            .where('email', isEqualTo: myEmail)
-            .snapshots(),
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasError) {
-            return Text("Something went wrong");
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting ||
-              !snapshot.hasData ||
-              snapshot.data!.docs.length == 0) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          return StreamBuilder<DocumentSnapshot>(
+      body: StreamBuilder<DocumentSnapshot>(
               stream: firestore
                   .collection('Users')
-                  .doc(snapshot.data!.docs[0].id)
+                  .doc(id)
                   .snapshots(),
               builder: (BuildContext context,
                   AsyncSnapshot<DocumentSnapshot> docSnapshot) {
@@ -234,9 +220,8 @@ class _ActivityBriefState extends State<ActivityBrief> {
                     ),
                   ),
                 );
-              });
-        },
-      ),
+              })
+      
     );
   }
 
