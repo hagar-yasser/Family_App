@@ -23,11 +23,13 @@ class Wrapper extends StatelessWidget {
         builder: (_, AsyncSnapshot<MyUser?> snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
             final MyUser? user = snapshot.data;
-            if (user != null&&authProvider.getCurrentUser()!.emailVerified) {
+            if (user != null && authProvider.getCurrentUser()!.emailVerified) {
               print(user.email);
-              return MyScaffold();
+              return MyScaffoldWrapper();
+            } else {
+              // authProvider.signOut();
+              return FullSignIn();
             }
-            return FullSignIn();
           }
           return Scaffold(
               body: Center(

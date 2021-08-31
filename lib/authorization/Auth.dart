@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:family_app/objects/MyUser.dart';
 
@@ -29,9 +30,12 @@ class Auth {
         await auth.signInWithEmailAndPassword(email: email, password: password);
     final User user = result.user!;
     if (!user.emailVerified) {
-      auth.signOut();
+      await auth.signOut();
       throw new Exception("Account email not verified yet");
+    } else {
+      await checkIfUserAddedToDB(user);
     }
+
     return convertFirbaseUser(user);
   }
 
@@ -39,7 +43,26 @@ class Auth {
     return auth.currentUser;
   }
 
-  Future<MyUser?> handleSignUp(email, password, name) async {
+  Future<void> checkIfUserAddedToDB(User user) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final email=user.email;
+    final name=user.displayName;
+    final userAddedToDatabase = await firestore
+        .collection("Users")
+        .where('email', isEqualTo: email!.replaceAll('.', '_'))
+        .get();
+    if (userAddedToDatabase.docs.length == 0) {
+      await firestore.collection('Users').add({
+        'email': email.replaceAll('.', '_'),
+        'name': name,
+        'family': {},
+        'activities': {},
+        'familyRequests': {}
+      });
+    }
+  }
+
+  Future<void> handleSignUp(email, password, name) async {
     UserCredential result = await auth.createUserWithEmailAndPassword(
         email: email, password: password);
     await result.user!.updateDisplayName(name);
@@ -48,7 +71,7 @@ class Auth {
 
     final User user = result.user!;
 
-    return convertFirbaseUser(user);
+    return await auth.signOut();
   }
 
   void printCurrentUserEmail() {

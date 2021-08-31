@@ -8,10 +8,10 @@ import 'package:provider/provider.dart';
 
 import 'authorization/Auth.dart';
 
-class FullActivity extends StatelessWidget {
-  static const routeName = '/fullActivity';
+class FullReport extends StatelessWidget {
+  static const routeName = '/fullReport';
 
-  const FullActivity({Key? key}) : super(key: key);
+  const FullReport({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -67,20 +67,15 @@ class FullActivity extends StatelessWidget {
                       )
                     ],
                   ),
-                  Text(
-                      (activity["members"][myEmail]['points']).toString() +
-                          '/' +
-                          (activity['reportRate'] == activity['activityRate']
-                                  ? 1
-                                  : 7)
-                              .toString(),
-                      style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
+                
                   Text("End Time: "+displayTime(activity['endTime'].toDate()),
                       style: TextStyle(color: Color(0xffAACDBE), fontSize: 20)),
                   Text('Members', style: TextStyle(fontSize: 30)),
                   Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: ListOfMembers(activity['members']),
+                    child: ListOfMembersReport(activity['members'],(activity['reportRate'] == activity['activityRate']
+                                  ? 1
+                                  : 7)),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -111,33 +106,7 @@ class FullActivity extends StatelessWidget {
                             style: TextStyle(fontSize: 20))
                       ]),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: MyRoundedLoadingButton(
-                            action: () {
-                              Navigator.pop(context, "Done");
-                            },
-                            child: Icon(Icons.check),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: MyRoundedLoadingButton(
-                            action: () {
-                              Navigator.pop(context, "Quit");
-                            },
-                            child: Icon(Icons.close),
-                          ),
-                        )
-                      ],
-                    ),
-                  )
+                  ),  
                 ],
               ),
             )
@@ -154,9 +123,10 @@ class FullActivity extends StatelessWidget {
   }
 }
 
-class ListOfMembers extends StatelessWidget {
+class ListOfMembersReport extends StatelessWidget {
   final Map members;
-  const ListOfMembers(this.members);
+  final int maxPoints;
+  const ListOfMembersReport(this.members,this.maxPoints);
 
   @override
   Widget build(BuildContext context) {
@@ -185,6 +155,10 @@ class ListOfMembers extends StatelessWidget {
                   members[membersList[index]]['name'],
                   style: TextStyle(fontSize: 20),
                 ),
+                trailing: Text(
+                      (members[membersList[index]]['points']).toString() +
+                          '/' +maxPoints.toString(),
+                      style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
               );
             },
             separatorBuilder: (BuildContext context, int index) =>
