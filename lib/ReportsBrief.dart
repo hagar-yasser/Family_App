@@ -40,7 +40,7 @@ class _ReportsBriefState extends State<ReportsBrief> {
             .doc(id)
             .update({'activities.' + activitiesIDs[i]: FieldValue.delete()});
         await firestore.collection('Users').doc(id).update({
-          'reports.' + activitiesIDs[i]: activityOriginal
+          'reports.' + activitiesIDs[i]: (activityOriginal as Map)
         });
         await firestore
             .collection('Activities')
