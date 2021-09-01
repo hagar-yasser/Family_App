@@ -4,6 +4,7 @@ import 'package:family_app/authorization/Auth.dart';
 import 'package:family_app/objects/Activity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class AddActivity extends StatefulWidget {
@@ -83,6 +84,7 @@ class _AddActivityState extends State<AddActivity> {
                       child: Container(
                         width: MediaQuery.of(context).size.width * 0.8,
                         child: TextField(
+                          inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'[.\\\[\]\*\`]'),replacementString: ' ')],
                           controller: _controller,
                           decoration: InputDecoration(
                               border: OutlineInputBorder(),

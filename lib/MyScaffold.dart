@@ -25,14 +25,20 @@ class MyScaffoldWrapper extends StatelessWidget {
             .get(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
-            return Center(
-              child: Text('An error occured when loading user data'),
+            return Container(
+              color: Colors.white,
+              child: Center(
+                child: Text('An error occured when loading user data'),
+              ),
             );
           }
           if (!snapshot.hasData ||
               snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
+            return Container(
+              color:Colors.white,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
             );
           }
           Provider.of<MyDocument>(context).id = snapshot.data!.docs[0].id;

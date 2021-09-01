@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
             ActivityBrief.routeName: (context)=> ActivityBrief(),
             FullActivity.routeName: (context)=>FullActivity(),
             AddActivity.routeName:(context)=>AddActivity(),
-            AddMembers.routeName:(context)=>AddMembers(),
+            AddMembersWrapper.routeName:(context)=>AddMembersWrapper(),
             ReportsBrief.routeName:(context)=>ReportsBrief(),
             FullReport.routeName:(context)=>FullReport()
           },

@@ -29,11 +29,12 @@ class Auth {
     UserCredential result =
         await auth.signInWithEmailAndPassword(email: email, password: password);
     final User user = result.user!;
+    
     if (!user.emailVerified) {
       await auth.signOut();
       throw new Exception("Account email not verified yet");
     } else {
-      await checkIfUserAddedToDB(user);
+      await auth.signInWithEmailAndPassword(email: email, password: password);
     }
 
     return convertFirbaseUser(user);
@@ -41,25 +42,6 @@ class Auth {
 
   User? getCurrentUser() {
     return auth.currentUser;
-  }
-
-  Future<void> checkIfUserAddedToDB(User user) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final email=user.email;
-    final name=user.displayName;
-    final userAddedToDatabase = await firestore
-        .collection("Users")
-        .where('email', isEqualTo: email!.replaceAll('.', '_'))
-        .get();
-    if (userAddedToDatabase.docs.length == 0) {
-      await firestore.collection('Users').add({
-        'email': email.replaceAll('.', '_'),
-        'name': name,
-        'family': {},
-        'activities': {},
-        'familyRequests': {}
-      });
-    }
   }
 
   Future<void> handleSignUp(email, password, name) async {

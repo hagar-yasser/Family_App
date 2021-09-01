@@ -123,7 +123,7 @@ class FullActivity extends StatelessWidget {
                             action: () {
                               Navigator.pop(context, "Done");
                             },
-                            child: Icon(Icons.check),
+                            child: Text("Done"),
                           ),
                         ),
                         Padding(
@@ -132,7 +132,7 @@ class FullActivity extends StatelessWidget {
                             action: () {
                               Navigator.pop(context, "Quit");
                             },
-                            child: Icon(Icons.close),
+                            child: Text("Quit this activity"),
                           ),
                         )
                       ],

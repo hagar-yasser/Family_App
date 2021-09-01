@@ -34,14 +34,14 @@ class _ReportsBriefState extends State<ReportsBrief> {
             .collection('Activities')
             .doc(activitiesIDs[i])
             .get();
-        Map members = activityOriginal['members'];
         await firestore
             .collection('Users')
             .doc(id)
             .update({'activities.' + activitiesIDs[i]: FieldValue.delete()});
-        await firestore.collection('Users').doc(id).update({
-          'reports.' + activitiesIDs[i]: (activityOriginal as Map)
-        });
+        await firestore
+            .collection('Users')
+            .doc(id)
+            .update({'reports.' + activitiesIDs[i]: (activityOriginal.data() as Map)});
         await firestore
             .collection('Activities')
             .doc(activitiesIDs[i])
@@ -119,22 +119,21 @@ class _ReportsBriefState extends State<ReportsBrief> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          Text.rich(TextSpan(
-                                              text: reports![reportsIDs[index]]['name'],
-                                              style: TextStyle(fontSize: 20))),
+                                          Text(
+                                              reports![reportsIDs[index]]
+                                                  ['name'],
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(fontSize: 20)),
                                           Text(
                                               (reports[reportsIDs[index]]
                                                               ['members']
                                                           [myEmail]['points'])
                                                       .toString() +
                                                   "/" +
-                                                  (reports[reportsIDs[index]]
-                                                                  [
+                                                  (reports[reportsIDs[index]][
                                                                   'reportRate'] ==
-                                                              reports[
-                                                                      reportsIDs[
-                                                                          index]]
-                                                                  [
+                                                              reports[reportsIDs[
+                                                                      index]][
                                                                   'activityRate']
                                                           ? 1
                                                           : 7)
@@ -145,7 +144,9 @@ class _ReportsBriefState extends State<ReportsBrief> {
                                           Container(
                                             width: 200,
                                             child: Text(
-                                              expandToListOfStrings((reports[reportsIDs[index]]['members'])),
+                                              expandToListOfStrings(
+                                                  (reports[reportsIDs[index]]
+                                                      ['members'])),
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
@@ -155,11 +156,11 @@ class _ReportsBriefState extends State<ReportsBrief> {
                                     IconButton(
                                       color: Color(0xffF7A440),
                                       onPressed: () async {
-                                        Navigator.of(context)
-                                              .pushNamed('/fullReport',
-                                                  arguments: reports[
-                                                      reportsIDs[index]]);
-                                                       },
+                                        Navigator.of(context).pushNamed(
+                                            '/fullReport',
+                                            arguments:
+                                                reports[reportsIDs[index]]);
+                                      },
                                       icon: Icon(
                                           Icons.keyboard_arrow_right_rounded),
                                       iconSize: 40,
