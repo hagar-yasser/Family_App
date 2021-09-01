@@ -105,10 +105,8 @@ class _SignInTypeState extends State<SignInType> {
                     if (_formKey.currentState!.validate()) {
                       if (_signUp) {
                         try {
-                          await auth.handleSignUp(
-                              _emailController.text,
-                              _passwordController.text,
-                              _nameController.text);
+                          await auth.handleSignUp(_emailController.text,
+                              _passwordController.text, _nameController.text);
                           allIsOk = true;
 
                           _showMessageDialog(
@@ -136,7 +134,7 @@ class _SignInTypeState extends State<SignInType> {
                       }
                     }
                   },
-                  child: Text( 'Submit')
+                  child: Text('Submit')
 
                   // style: ButtonStyle(
                   //     backgroundColor:
@@ -274,6 +272,7 @@ class SignUp extends StatelessWidget {
               obscureText: false,
               controller: controllers[2],
               constraint: 15,
+              inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'[.\\\[\]\*\`]'),replacementString: ' ')],
             ),
           ],
         )
@@ -292,12 +291,15 @@ class MyTextFormField extends StatefulWidget {
   final bool obscureText;
   final TextEditingController controller;
   final int? constraint;
+  final List<TextInputFormatter>? inputFormatters;
   const MyTextFormField(
       {Key? key,
       required this.text,
       required this.obscureText,
-      required this.controller,int? constraint})
-      : this.constraint=constraint,super(key: key);
+      required this.controller,
+      int? constraint,List<TextInputFormatter>? inputFormatters})
+      : this.constraint = constraint,this.inputFormatters=inputFormatters,
+        super(key: key);
 
   @override
   _MyTextFormFieldState createState() => _MyTextFormFieldState();
@@ -317,7 +319,8 @@ class _MyTextFormFieldState extends State<MyTextFormField> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
-        maxLength:widget.constraint ,
+        inputFormatters: widget.inputFormatters,
+        maxLength: widget.constraint,
         maxLengthEnforcement: MaxLengthEnforcement.enforced,
         obscureText: widget.obscureText,
         controller: _controller,
