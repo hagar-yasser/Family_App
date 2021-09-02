@@ -272,7 +272,7 @@ class SignUp extends StatelessWidget {
               obscureText: false,
               controller: controllers[2],
               constraint: 15,
-              inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'[.\\\[\]\*\`]'),replacementString: ' ')],
+              //inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'[.\\\[\]\*\`]'),replacementString: ' ')],
             ),
           ],
         )

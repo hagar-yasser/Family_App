@@ -26,7 +26,7 @@ class _AddActivityState extends State<AddActivity> {
   void initState() {
     super.initState();
     User? user = Provider.of<Auth>(context, listen: false).getCurrentUser();
-    myEmail = user!.email!.replaceAll('.', '_');
+    myEmail = user!.email!;
     _members = {
       myEmail: {'name': user.displayName, 'points': 0}
     };
@@ -84,7 +84,11 @@ class _AddActivityState extends State<AddActivity> {
                       child: Container(
                         width: MediaQuery.of(context).size.width * 0.8,
                         child: TextField(
-                          inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'[.\\\[\]\*\`]'),replacementString: ' ')],
+                          // inputFormatters: [
+                          //   FilteringTextInputFormatter.deny(
+                          //       RegExp(r'[.\\\[\]\*\`]'),
+                          //       replacementString: ' ')
+                          // ],
                           controller: _controller,
                           decoration: InputDecoration(
                               border: OutlineInputBorder(),
@@ -272,20 +276,12 @@ class _AddActivityState extends State<AddActivity> {
                                     .where('email', isEqualTo: key)
                                     .get();
                                 DocumentSnapshot myMember = member.docs[0];
+                                
                                 await firestore
                                     .collection('Users')
                                     .doc(myMember.id)
-                                    .update({
-                                  ('activities.' + activityID): newActivity
-                                });
+                                    .set({'activities':{activityID:newActivity}}, SetOptions(merge: true));
                               });
-
-                              // await firestore
-                              //     .collection('Users')
-                              //     .doc(userInDB.docs[0].id)
-                              //     .update({
-                              //   ('activities.' + activityID): newActivity
-                              // });
                               Navigator.pop(context);
                             }
                           },

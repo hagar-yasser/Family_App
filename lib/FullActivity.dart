@@ -18,7 +18,7 @@ class FullActivity extends StatelessWidget {
     final activity = ModalRoute.of(context)!.settings.arguments as Map;
     final ScrollController _controllerOne = ScrollController();
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     return Scaffold(
       //backgroundColor: Colors.white,
       body: Scrollbar(

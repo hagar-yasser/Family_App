@@ -13,17 +13,21 @@ import 'authorization/Auth.dart';
 class Wrapper extends StatelessWidget {
   static const routeName = '/wrapper';
   const Wrapper({Key? key}) : super(key: key);
-  Future<void> checkIfUserAddedToDB(User user) async {
+  Future<void> checkIfUserAddedToDB(Auth authProvider) async {
+    await authProvider.reloadUserData();
+    authProvider.printCurrentUserEmail();
+    if (authProvider.getCurrentUser() == null) return;
     FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User user = authProvider.getCurrentUser()!;
     final email = user.email;
     final name = user.displayName;
     final userAddedToDatabase = await firestore
         .collection("Users")
-        .where('email', isEqualTo: email!.replaceAll('.', '_'))
+        .where('email', isEqualTo: email!)
         .get();
     if (userAddedToDatabase.docs.length == 0) {
       await firestore.collection('Users').add({
-        'email': email.replaceAll('.', '_'),
+        'email': email,
         'name': name,
         'family': {},
         'activities': {},
@@ -36,8 +40,8 @@ class Wrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<Auth>(context);
     authProvider.printCurrentUserEmail();
-    authProvider.reloadUserData();
-    authProvider.printCurrentUserEmail();
+    // authProvider.reloadUserData();
+    // authProvider.printCurrentUserEmail();
     return StreamBuilder<MyUser?>(
         stream: authProvider.user,
         builder: (_, AsyncSnapshot<MyUser?> snapshot) {
@@ -46,7 +50,7 @@ class Wrapper extends StatelessWidget {
             if (user != null && authProvider.getCurrentUser()!.emailVerified) {
               print(user.email);
               return FutureBuilder(
-                future: checkIfUserAddedToDB(authProvider.getCurrentUser()!),
+                future: checkIfUserAddedToDB(authProvider),
                 builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
                   if (snapshot.hasError) {
                     return Container(

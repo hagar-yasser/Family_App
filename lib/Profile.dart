@@ -68,7 +68,8 @@ class _ProfileState extends State<Profile> {
                               child: MyRoundedLoadingButton(
                                 child: Text('Send family request'),
                                 action: () async {
-                                  await sendFamilyRequest(_controller.text,authProvider.getCurrentUser());
+                                  await sendFamilyRequest(_controller.text,
+                                      authProvider.getCurrentUser());
                                 },
                               ),
                             )
@@ -89,15 +90,15 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Future<void> sendFamilyRequest(String email,User? user) async {
+  Future<void> sendFamilyRequest(String email, User? user) async {
     if (email.isEmpty) {
       _showMessageDialog(context, "please enter a valid email", "");
       return;
     } else {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-     
-      String myEmail = user!.email!.replaceAll('.', '_');
-      email = email.replaceAll('.', '_');
+
+      String myEmail = user!.email!;
+
       QuerySnapshot myUser = await firestore
           .collection('Users')
           .where('email', isEqualTo: myEmail)
@@ -112,8 +113,9 @@ class _ProfileState extends State<Profile> {
         return;
       }
       Map family = myUser.docs[0]['family'];
-      if(family[email]!=null){
+      if (family[email] != null) {
         _showMessageDialog(context, "You are already family members", "");
+        return;
       }
       Map familyRequests = myUser.docs[0]['familyRequests'];
       if (familyRequests[email] != null ||
@@ -122,14 +124,16 @@ class _ProfileState extends State<Profile> {
         _showMessageDialog(context, "Family Request already sent", "");
         return;
       }
-      await firestore
-          .collection('Users')
-          .doc(myUser.docs[0].id)
-          .update({'familyRequests.' + email + '.' + myEmail: 'pending'});
-      await firestore
-          .collection('Users')
-          .doc(requestedUser.docs[0].id)
-          .update({'familyRequests.' + email + '.' + myEmail: 'pending'});
+      await firestore.collection('Users').doc(myUser.docs[0].id).set({
+        'familyRequests': {
+          email: {myEmail: 'pending'}
+        }
+      }, SetOptions(merge: true));
+      await firestore.collection('Users').doc(requestedUser.docs[0].id).set({
+        'familyRequests': {
+          email: {myEmail: 'pending'}
+        }
+      }, SetOptions(merge: true));
     }
   }
 

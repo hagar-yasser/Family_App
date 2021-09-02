@@ -17,7 +17,7 @@ class _FamilyState extends State<Family> {
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     return StreamBuilder(
       stream: firestore
           .collection('Users')
@@ -174,12 +174,12 @@ class FamilyRequests extends StatelessWidget {
     ScrollController _controller = ScrollController();
     User? user = Provider.of<Auth>(context).getCurrentUser();
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     List familyRequestsIDs = [];
-    if(familyRequests[myEmail]!=null)
-    familyRequests[myEmail].forEach((key, value) {
-      familyRequestsIDs.add(key);
-    });
+    if (familyRequests[myEmail] != null)
+      familyRequests[myEmail].forEach((key, value) {
+        familyRequestsIDs.add(key);
+      });
     return Container(
       height: 400,
       width: 400,
@@ -195,13 +195,13 @@ class FamilyRequests extends StatelessWidget {
             itemCount: familyRequestsIDs.length,
             controller: _controller,
             itemBuilder: (BuildContext context, int index) {
-              return Column(
-                children:[ Text(
+              return Column(children: [
+                Text(
                   familyRequestsIDs[index],
                   style: TextStyle(fontSize: 20),
                 ),
-                 Row(
-                   mainAxisAlignment: MainAxisAlignment.center,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -220,21 +220,19 @@ class FamilyRequests extends StatelessWidget {
                             await firestore
                                 .collection('Users')
                                 .doc(myUser.docs[0].id)
-                                .update({
-                              'familyRequests.' +
-                                  myEmail +
-                                  "." +
+                                .set({
+                              'familyRequests': {
+                                myEmail: {
                                   familyRequestsIDs[index]: FieldValue.delete()
-                            });
+                                }
+                              }
+                            }, SetOptions(merge: true));
                             await firestore
                                 .collection('Users')
                                 .doc(requestedUser.docs[0].id)
-                                .update({
-                              'familyRequests.' +
-                                  myEmail
-                                  : FieldValue.delete()
-                            });
-
+                                .set({
+                              'familyRequests': {myEmail: FieldValue.delete()}
+                            }, SetOptions(merge: true));
                           },
                           icon: Icon(Icons.cancel_outlined)),
                     ),
@@ -242,7 +240,7 @@ class FamilyRequests extends StatelessWidget {
                       padding: const EdgeInsets.all(8.0),
                       child: IconButton(
                           color: Color(0xffEA907A),
-                          onPressed: () async{
+                          onPressed: () async {
                             QuerySnapshot myUser = await firestore
                                 .collection('Users')
                                 .where('email', isEqualTo: myEmail)
@@ -255,28 +253,33 @@ class FamilyRequests extends StatelessWidget {
                             await firestore
                                 .collection('Users')
                                 .doc(myUser.docs[0].id)
-                                .update({
-                              'familyRequests.' +
-                                  myEmail +
-                                  "." +
-                                  familyRequestsIDs[index]: FieldValue.delete(),
-                              'family.'+familyRequestsIDs[index]+'.name':requestedUser.docs[0]['name']
-                            });
+                                .set({
+                              'familyRequests': {
+                                myEmail: {
+                                  familyRequestsIDs[index]: FieldValue.delete()
+                                }
+                              },
+                              'family': {
+                                familyRequestsIDs[index]: {
+                                  'name': requestedUser.docs[0]['name']
+                                }
+                              }
+                            }, SetOptions(merge: true));
                             await firestore
                                 .collection('Users')
                                 .doc(requestedUser.docs[0].id)
-                                .update({
-                              'familyRequests.' +
-                                  myEmail 
-                                 : FieldValue.delete(),
-                              'family.'+myEmail+'.name':myUser.docs[0]['name']
-                            });
+                                .set({
+                              'familyRequests': {myEmail: FieldValue.delete()},
+                              'family': {
+                                myEmail: {'name': myUser.docs[0]['name']}
+                              }
+                            }, SetOptions(merge: true));
                           },
                           icon: Icon(Icons.check_circle_outline_rounded)),
                     ),
                   ],
-                ),]
-              );
+                ),
+              ]);
             },
             separatorBuilder: (BuildContext context, int index) =>
                 const Divider(),

@@ -17,7 +17,7 @@ class MyScaffoldWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     return FutureBuilder(
         future: firestore
             .collection('Users')
@@ -62,7 +62,7 @@ class _MyScaffoldState extends State<MyScaffold> {
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     return Scaffold(
       body: currentPage(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(

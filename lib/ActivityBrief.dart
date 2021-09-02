@@ -26,7 +26,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     String? id = Provider.of<MyDocument>(context).id;
 
     return Scaffold(
@@ -51,6 +51,23 @@ class _ActivityBriefState extends State<ActivityBrief> {
                   !docSnapshot.hasData) {
                 return Center(child: CircularProgressIndicator());
               }
+              // return Center(
+              //   child: MyRoundedLoadingButton(
+              //     child: Text('Delete field'),
+              //     action: () async {
+              //       QuerySnapshot s = await firestore
+              //           .collection('Users')
+              //           .where('email', isEqualTo: "hagar.ay7aga@ay7aga[jf")
+              //           .get();
+              //       await firestore.collection('Users').doc(s.docs[0].id).set({
+              //         'activities': {
+              //           'activity.awelwa7ed': FieldValue.delete()
+              //         }
+              //       }, SetOptions(merge: true));
+
+              //     },
+              //   ),
+              // );
               return Center(
                 child: RefreshIndicator(
                   onRefresh: () async {
@@ -167,22 +184,24 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                   await firestore
                                                       .collection('Activities')
                                                       .doc(activitiesIDs[index])
-                                                      .update({
-                                                    'members.' + myEmail:
-                                                        FieldValue.delete()
-                                                  });
+                                                      .set({
+                                                    'members': {
+                                                      myEmail:
+                                                          FieldValue.delete()
+                                                    }
+                                                  }, SetOptions(merge: true));
                                                   //REMOVE THIS ACTIVITY FROM MY ACTIVITIES IN THE USER TABLE
                                                   activities.remove(
                                                       activitiesIDs[index]);
                                                   await firestore
                                                       .collection("Users")
                                                       .doc(docSnapshot.data!.id)
-                                                      .update({
-                                                    'activities.' +
-                                                            activitiesIDs[
-                                                                index]:
-                                                        FieldValue.delete()
-                                                  });
+                                                      .set({
+                                                    'activities': {
+                                                      activitiesIDs[index]:
+                                                          FieldValue.delete()
+                                                    }
+                                                  }, SetOptions(merge: true));
                                                 }
                                               }
                                             },
@@ -234,19 +253,21 @@ class _ActivityBriefState extends State<ActivityBrief> {
       activity['members'][email]['points'] = previousPoints + 1;
       activity['lastDone'] = clickedTime;
       //UPDATE THE ACTIVITY.ID IN THE ACTIVITIES TABLE WITH MY POINTS
-      await firestore.collection('Activities').doc(activityID).update({
-        'members.' + email + '.points': activity['members'][email]['points']
-      });
+      await firestore.collection('Activities').doc(activityID).set({
+        'members': {
+          email: {'points': activity['members'][email]['points']}
+        }
+      }, SetOptions(merge: true));
       //UPDATE MY ACTIVITY IN THE USERS TABLE
       await firestore
-          .collection("Users")
+          .collection('Users')
           .doc(docSnapshot.data!.id)
-          .update({'activities.' + activityID: activity});
+          .set({'activities':{activityID:activity}}, SetOptions(merge: true));
     } else {
       if (endTime.compareTo(clickedTime) <= 0) {
-         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Activity has ended! Check its report in the reports section.")));
-      
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                "Activity has ended! Check its report in the reports section.")));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("Activity already checked for this " +

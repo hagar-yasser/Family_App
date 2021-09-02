@@ -34,18 +34,15 @@ class _ReportsBriefState extends State<ReportsBrief> {
             .collection('Activities')
             .doc(activitiesIDs[i])
             .get();
-        await firestore
-            .collection('Users')
-            .doc(id)
-            .update({'activities.' + activitiesIDs[i]: FieldValue.delete()});
-        await firestore
-            .collection('Users')
-            .doc(id)
-            .update({'reports.' + activitiesIDs[i]: (activityOriginal.data() as Map)});
-        await firestore
-            .collection('Activities')
-            .doc(activitiesIDs[i])
-            .update({'reportsSent.' + myDoc['email']: true});
+        await firestore.collection('Users').doc(id).set({
+          'activities': {activitiesIDs[i]: FieldValue.delete()}
+        }, SetOptions(merge: true));
+        await firestore.collection('Users').doc(id).set({
+          'reports': {activitiesIDs[i]: (activityOriginal.data() as Map)}
+        }, SetOptions(merge: true));
+        await firestore.collection('Activities').doc(activitiesIDs[i]).set({
+          'reportsSent': {myDoc['email']: true}
+        }, SetOptions(merge: true));
       }
     }
     return firestore.collection('Users').doc(id).get();
@@ -55,7 +52,7 @@ class _ReportsBriefState extends State<ReportsBrief> {
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     return FutureBuilder(
       future: checkActivitiesStates(firestore, myEmail),
       builder:

@@ -12,7 +12,7 @@ class AddMembersWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     return Scaffold(
         body: FutureBuilder<QuerySnapshot>(
             future: firestore
@@ -47,7 +47,7 @@ class _AddMembersState extends State<AddMembers> {
   void initState() {
     super.initState();
     User? user = Provider.of<Auth>(context, listen: false).getCurrentUser();
-    myEmail = user!.email!.replaceAll('.', '_');
+    myEmail = user!.email!;
     _chosenMembers = {
       myEmail: {'name': user.displayName, 'points': 0}
     };
