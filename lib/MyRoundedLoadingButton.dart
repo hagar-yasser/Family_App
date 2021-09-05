@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
@@ -34,13 +36,17 @@ class _MyRoundedLoadingButtonState extends State<MyRoundedLoadingButton> {
   Widget build(BuildContext context) {
     return RoundedLoadingButton(
       controller: _loadingController,
+      successColor: Color(0xffEA907A),
       onPressed: () async {
         await widget.action();
-        if (!_isDisposed) _loadingController.reset();
+        if (!_isDisposed) {
+          _loadingController.success();
+          Timer(Duration(seconds: 1), () => _loadingController.reset());
+        }
       },
       child: widget.child,
       color: Color(0xffEA907A),
-      valueColor: Color(0xffF7A440),
+      valueColor: Colors.white,
       width: 150,
     );
   }

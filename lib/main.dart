@@ -5,6 +5,7 @@ import 'package:family_app/AddMembers.dart';
 import 'package:family_app/FullActivity.dart';
 import 'package:family_app/FullReport.dart';
 import 'package:family_app/ReportsBrief.dart';
+import 'package:family_app/ResetPassword.dart';
 import 'package:family_app/Wrapper.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:family_app/database/MyDocument.dart';
@@ -40,7 +41,8 @@ class MyApp extends StatelessWidget {
             AddActivity.routeName:(context)=>AddActivity(),
             AddMembersWrapper.routeName:(context)=>AddMembersWrapper(),
             ReportsBrief.routeName:(context)=>ReportsBrief(),
-            FullReport.routeName:(context)=>FullReport()
+            FullReport.routeName:(context)=>FullReport(),
+            ResetPassword.routeName:(context)=>ResetPassword()
           },
           theme: ThemeData(
               scaffoldBackgroundColor: Colors.white,

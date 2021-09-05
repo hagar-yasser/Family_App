@@ -23,7 +23,12 @@ class FullSignIn extends StatelessWidget {
                   ),
                 ),
               ),
-              SignInType()
+              SignInType(),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('/resetPassword');
+                  },
+                  child: Text('Forgot Your Password ?'))
             ],
           ),
         ),

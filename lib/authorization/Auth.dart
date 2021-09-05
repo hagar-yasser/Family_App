@@ -22,6 +22,10 @@ class Auth {
     }
   }
 
+  Future<void> resetPassword(String email) async {
+    await auth.sendPasswordResetEmail(email: email);
+  }
+
   Stream<MyUser?> get user {
     return auth.authStateChanges().map(convertFirbaseUser);
   }
