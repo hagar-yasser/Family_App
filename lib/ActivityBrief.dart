@@ -28,7 +28,21 @@ class _ActivityBriefState extends State<ActivityBrief> {
     User? user = Provider.of<Auth>(context).getCurrentUser();
     String myEmail = user!.email!;
     String? id = Provider.of<MyDocument>(context).id;
+    double height = (MediaQuery.of(context).size.height);
+    var padding = MediaQuery.of(context).padding;
+    double height1 = height - padding.top - padding.bottom;
 
+    // Height (without status bar)
+    double height2 = height - padding.top;
+
+    // Height (without status and toolbar)
+    double height3 = height - padding.top - kToolbarHeight;
+    // print("height" + height.toString());
+    // print("height1" + height1.toString());
+    // print("height2" + height2.toString());
+    // print("height3" + height3.toString());
+    // print("text scale factor "+MediaQuery.of(context).textScaleFactor.toString());
+    // print("width"+(MediaQuery.of(context).size.width*MediaQuery.of(context).devicePixelRatio).toString());
     return Scaffold(
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
@@ -123,28 +137,31 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     style: TextStyle(
-                                                        fontSize: 20)),
+                                                        fontSize: 20) ,strutStyle:StrutStyle(forceStrutHeight: true) ,),
                                                 Text(
-                                                    (activities[activitiesIDs[index]]
-                                                                        ['members']
-                                                                    [myEmail]
-                                                                ['points'])
-                                                            .toString() +
-                                                        "/" +
-                                                        (activities[activitiesIDs[index]]
-                                                                        [
-                                                                        'reportRate'] ==
-                                                                    activities[
-                                                                            activitiesIDs[index]]
-                                                                        [
-                                                                        'activityRate']
-                                                                ? 1
-                                                                : 7)
-                                                            .toString(),
-                                                    style: TextStyle(
-                                                        color:
-                                                            Color(0xffAACDBE),
-                                                        fontSize: 30)),
+                                                  (activities[activitiesIDs[
+                                                                          index]]
+                                                                      [
+                                                                      'members']
+                                                                  [myEmail][
+                                                              'points'])
+                                                          .toString() +
+                                                      "/" +
+                                                      (activities[activitiesIDs[
+                                                                          index]]
+                                                                      [
+                                                                      'reportRate'] ==
+                                                                  activities[activitiesIDs[
+                                                                          index]]
+                                                                      [
+                                                                      'activityRate']
+                                                              ? 1
+                                                              : 7)
+                                                          .toString(),
+                                                  style: TextStyle(
+                                                      color: Color(0xffAACDBE),
+                                                      fontSize: 30),
+                                                ),
                                                 Container(
                                                   width: 200,
                                                   child: Text(
@@ -259,10 +276,9 @@ class _ActivityBriefState extends State<ActivityBrief> {
         }
       }, SetOptions(merge: true));
       //UPDATE MY ACTIVITY IN THE USERS TABLE
-      await firestore
-          .collection('Users')
-          .doc(docSnapshot.data!.id)
-          .set({'activities':{activityID:activity}}, SetOptions(merge: true));
+      await firestore.collection('Users').doc(docSnapshot.data!.id).set({
+        'activities': {activityID: activity}
+      }, SetOptions(merge: true));
     } else {
       if (endTime.compareTo(clickedTime) <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
