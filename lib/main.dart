@@ -13,16 +13,81 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:provider/provider.dart';
 import 'package:family_app/FullSignIn.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await _configureLocalTimeZone();
+  var initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  var initializationSettingsIOS = IOSInitializationSettings(
+      onDidReceiveLocalNotification:
+          (int id, String? title, String? body, String? payload) async {});
+  var initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+      onSelectNotification: (String? payload) async {
+    if (payload != null) {
+      debugPrint('notification payload: ' + payload);
+    }
+  });
+  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      "weekly_check_reports", "weekly_check_reports", "weekly_check_reports",
+      importance: Importance.max);
+  var iOSPlatformChannelSpecifics = IOSNotificationDetails(
+      presentAlert: true, presentBadge: true, presentSound: true);
+  var platfromChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics);
+  print(_nextInstanceOfFridayTenAM());
+  await flutterLocalNotificationsPlugin.zonedSchedule(
+      0,
+      "Hello there!👋",
+      'Checkout if you have any new reports!🤩',
+      _nextInstanceOfFridayTenAM(),
+      platfromChannelSpecifics,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      androidAllowWhileIdle: true,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime);
   await Firebase.initializeApp();
   runApp(MyApp());
+}
+
+Future<void> _configureLocalTimeZone() async {
+  tz.initializeTimeZones();
+  final String? timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+  tz.setLocalLocation(tz.getLocation(timeZoneName!));
+}
+
+tz.TZDateTime _nextInstanceOfTenAM() {
+  final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+  print(now);
+  tz.TZDateTime scheduledDate =
+      tz.TZDateTime(tz.local, now.year, now.month, now.day, 10);
+  if (scheduledDate.isBefore(now)) {
+    scheduledDate = scheduledDate.add(const Duration(days: 1));
+  }
+  return scheduledDate;
+}
+
+tz.TZDateTime _nextInstanceOfFridayTenAM() {
+  tz.TZDateTime scheduledDate = _nextInstanceOfTenAM();
+  while (scheduledDate.weekday != DateTime.monday) {
+    scheduledDate = scheduledDate.add(const Duration(days: 1));
+  }
+  return scheduledDate;
 }
 
 class MyApp extends StatelessWidget {
@@ -30,19 +95,20 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<Auth>(create: (_)=>Auth()),
-        Provider<MyDocument>(create: (_)=>MyDocument(),)
-        
+        Provider<Auth>(create: (_) => Auth()),
+        Provider<MyDocument>(
+          create: (_) => MyDocument(),
+        )
       ],
       child: MaterialApp(
           routes: {
-            ActivityBrief.routeName: (context)=> ActivityBrief(),
-            FullActivity.routeName: (context)=>FullActivity(),
-            AddActivity.routeName:(context)=>AddActivity(),
-            AddMembersWrapper.routeName:(context)=>AddMembersWrapper(),
-            ReportsBrief.routeName:(context)=>ReportsBrief(),
-            FullReport.routeName:(context)=>FullReport(),
-            ResetPassword.routeName:(context)=>ResetPassword()
+            ActivityBrief.routeName: (context) => ActivityBrief(),
+            FullActivity.routeName: (context) => FullActivity(),
+            AddActivity.routeName: (context) => AddActivity(),
+            AddMembersWrapper.routeName: (context) => AddMembersWrapper(),
+            ReportsBrief.routeName: (context) => ReportsBrief(),
+            FullReport.routeName: (context) => FullReport(),
+            ResetPassword.routeName: (context) => ResetPassword()
           },
           theme: ThemeData(
               scaffoldBackgroundColor: Colors.white,
