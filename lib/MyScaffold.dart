@@ -5,6 +5,7 @@ import 'package:family_app/Profile.dart';
 import 'package:family_app/ReportsBrief.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:family_app/database/MyDocument.dart';
+import 'package:family_app/myNames.dart';
 import 'package:family_app/objects/Activity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,8 +21,8 @@ class MyScaffoldWrapper extends StatelessWidget {
     String myEmail = user!.email!;
     return FutureBuilder(
         future: firestore
-            .collection('Users')
-            .where('email', isEqualTo: myEmail)
+            .collection(myNames.usersTable)
+            .where(myNames.email, isEqualTo: myEmail)
             .get(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
@@ -35,7 +36,7 @@ class MyScaffoldWrapper extends StatelessWidget {
           if (!snapshot.hasData ||
               snapshot.connectionState == ConnectionState.waiting) {
             return Container(
-              color:Colors.white,
+              color: Colors.white,
               child: Center(
                 child: CircularProgressIndicator(),
               ),

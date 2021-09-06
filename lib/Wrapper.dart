@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/ActivityBrief.dart';
 import 'package:family_app/FullSignIn.dart';
 import 'package:family_app/MyScaffold.dart';
+import 'package:family_app/myNames.dart';
 import 'package:family_app/objects/Activity.dart';
 import 'package:family_app/objects/MyUser.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,16 +23,16 @@ class Wrapper extends StatelessWidget {
     final email = user.email;
     final name = user.displayName;
     final userAddedToDatabase = await firestore
-        .collection("Users")
-        .where('email', isEqualTo: email!)
+        .collection(myNames.usersTable)
+        .where(myNames.email, isEqualTo: email!)
         .get();
     if (userAddedToDatabase.docs.length == 0) {
-      await firestore.collection('Users').add({
-        'email': email,
-        'name': name,
-        'family': {},
-        'activities': {},
-        'familyRequests': {}
+      await firestore.collection(myNames.usersTable).add({
+        myNames.email: email,
+        myNames.name: name,
+        myNames.family: {},
+        myNames.activities: {},
+        myNames.familyRequests: {}
       });
     }
   }

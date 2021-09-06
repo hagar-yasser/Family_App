@@ -3,6 +3,7 @@ import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:family_app/database/MyDocument.dart';
+import 'package:family_app/myNames.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -52,7 +53,8 @@ class _ActivityBriefState extends State<ActivityBrief> {
           },
         ),
         body: StreamBuilder<DocumentSnapshot>(
-            stream: firestore.collection('Users').doc(id).snapshots(),
+            stream:
+                firestore.collection(myNames.usersTable).doc(id).snapshots(),
             builder: (BuildContext context,
                 AsyncSnapshot<DocumentSnapshot> docSnapshot) {
               if (docSnapshot.hasError) {
@@ -97,15 +99,16 @@ class _ActivityBriefState extends State<ActivityBrief> {
                           const Divider(),
                       physics: AlwaysScrollableScrollPhysics(),
                       controller: _scrollController,
-                      itemCount: docSnapshot.data!['activities'].length ?? 0,
+                      itemCount:
+                          docSnapshot.data![myNames.activities].length ?? 0,
                       itemBuilder: (BuildContext context, int index) {
-                        Map activities = docSnapshot.data!['activities'];
+                        Map activities = docSnapshot.data![myNames.activities];
                         List activitiesIDs = [];
                         activities.forEach((key, value) {
                           activitiesIDs.add(key);
                         });
-                        Map members =
-                            activities[activitiesIDs[index]]['members'] as Map;
+                        Map members = activities[activitiesIDs[index]]
+                            [myNames.members] as Map;
                         return Container(
                           height: 200,
                           width: 300,
@@ -132,29 +135,30 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                   CrossAxisAlignment.center,
                                               children: [
                                                 Text(
-                                                    activities[activitiesIDs[
-                                                        index]]['name'],
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                        fontSize: 20) ,strutStyle:StrutStyle(forceStrutHeight: true) ,),
+                                                  activities[
+                                                          activitiesIDs[index]]
+                                                      [myNames.name],
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style:
+                                                      TextStyle(fontSize: 20),
+                                                  strutStyle: StrutStyle(
+                                                      forceStrutHeight: true),
+                                                ),
                                                 Text(
-                                                  (activities[activitiesIDs[
-                                                                          index]]
-                                                                      [
-                                                                      'members']
-                                                                  [myEmail][
-                                                              'points'])
+                                                  (activities[activitiesIDs[index]]
+                                                                      [myNames
+                                                                          .members]
+                                                                  [myEmail]
+                                                              [myNames.points])
                                                           .toString() +
                                                       "/" +
-                                                      (activities[activitiesIDs[
-                                                                          index]]
-                                                                      [
-                                                                      'reportRate'] ==
-                                                                  activities[activitiesIDs[
-                                                                          index]]
-                                                                      [
-                                                                      'activityRate']
+                                                      (activities[activitiesIDs[index]]
+                                                                      [myNames
+                                                                          .reportRate] ==
+                                                                  activities[activitiesIDs[index]]
+                                                                      [myNames
+                                                                          .activityRate]
                                                               ? 1
                                                               : 7)
                                                           .toString(),
@@ -199,10 +203,11 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                 } else {
                                                   //REMOVE ME FROM THE LIST OF MEMBERS OF THIS ACTIVITY IN THE ACTIVITIES TABLE
                                                   await firestore
-                                                      .collection('Activities')
+                                                      .collection(myNames
+                                                          .activitiesTable)
                                                       .doc(activitiesIDs[index])
                                                       .set({
-                                                    'members': {
+                                                    myNames.members: {
                                                       myEmail:
                                                           FieldValue.delete()
                                                     }
@@ -211,10 +216,11 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                   activities.remove(
                                                       activitiesIDs[index]);
                                                   await firestore
-                                                      .collection("Users")
+                                                      .collection(
+                                                          myNames.usersTable)
                                                       .doc(docSnapshot.data!.id)
                                                       .set({
-                                                    'activities': {
+                                                    myNames.activities: {
                                                       activitiesIDs[index]:
                                                           FieldValue.delete()
                                                     }
@@ -257,27 +263,33 @@ class _ActivityBriefState extends State<ActivityBrief> {
   Future<void> checkActivityDone(Map activity, activityID, email,
       FirebaseFirestore firestore, docSnapshot) async {
     DateTime clickedTime = DateTime.now().toUtc();
-    DateTime? lastDone =
-        (activity['lastDone']) == null ? null : (activity['lastDone']).toDate();
-    DateTime timeAdded = (activity['timeAdded']).toDate();
-    DateTime endTime = (activity['endTime']).toDate();
+    DateTime? lastDone = (activity[myNames.lastDone]) == null
+        ? null
+        : (activity[myNames.lastDone]).toDate();
+    DateTime timeAdded = (activity[myNames.timeAdded]).toDate();
+    DateTime endTime = (activity[myNames.endTime]).toDate();
     if (endTime.compareTo(clickedTime) > 0 &&
         (lastDone == null ||
-            (activity['activityRate'] == 'Daily' &&
+            (activity[myNames.activityRate] == 'Daily' &&
                 dayFromTo(timeAdded, lastDone) !=
                     dayFromTo(timeAdded, clickedTime)))) {
-      final previousPoints = activity['members'][email]['points'];
-      activity['members'][email]['points'] = previousPoints + 1;
-      activity['lastDone'] = clickedTime;
+      final previousPoints = activity[myNames.members][email][myNames.points];
+      activity[myNames.members][email][myNames.points] = previousPoints + 1;
+      activity[myNames.lastDone] = clickedTime;
       //UPDATE THE ACTIVITY.ID IN THE ACTIVITIES TABLE WITH MY POINTS
-      await firestore.collection('Activities').doc(activityID).set({
-        'members': {
-          email: {'points': activity['members'][email]['points']}
+      await firestore.collection(myNames.activitiesTable).doc(activityID).set({
+        myNames.members: {
+          email: {
+            myNames.points: activity[myNames.members][email][myNames.points]
+          }
         }
       }, SetOptions(merge: true));
       //UPDATE MY ACTIVITY IN THE USERS TABLE
-      await firestore.collection('Users').doc(docSnapshot.data!.id).set({
-        'activities': {activityID: activity}
+      await firestore
+          .collection(myNames.usersTable)
+          .doc(docSnapshot.data!.id)
+          .set({
+        myNames.activities: {activityID: activity}
       }, SetOptions(merge: true));
     } else {
       if (endTime.compareTo(clickedTime) <= 0) {
@@ -287,7 +299,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("Activity already checked for this " +
-                (activity['activityRate'] == 'Daily' ? "Day" : "Week"))));
+                (activity[myNames.activityRate] == 'Daily' ? "Day" : "Week"))));
       }
     }
   }
@@ -296,7 +308,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
     String result = "";
     int count = 0;
     map.forEach((key, value) {
-      result += map[key]['name'];
+      result += map[key][myNames.name];
       if (count < map.length - 1) {
         result += ", ";
       }

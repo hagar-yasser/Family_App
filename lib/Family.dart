@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/MyRectangularButton.dart';
 import 'package:family_app/authorization/Auth.dart';
+import 'package:family_app/myNames.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,8 +21,8 @@ class _FamilyState extends State<Family> {
     String myEmail = user!.email!;
     return StreamBuilder(
       stream: firestore
-          .collection('Users')
-          .where('email', isEqualTo: myEmail)
+          .collection(myNames.usersTable)
+          .where(myNames.email, isEqualTo: myEmail)
           .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
@@ -31,9 +32,9 @@ class _FamilyState extends State<Family> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
-        Map family = snapshot.data!.docs[0]['family'];
+        Map family = snapshot.data!.docs[0][myNames.family];
 
-        Map familyRequests = snapshot.data!.docs[0]['familyRequests'];
+        Map familyRequests = snapshot.data!.docs[0][myNames.familyRequests];
 
         return Center(
           child: RefreshIndicator(
@@ -150,7 +151,7 @@ class FamilyMembers extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                 title: Text(
-                  family[familyIDs[index]]['name'],
+                  family[familyIDs[index]][myNames.name],
                   style: TextStyle(fontSize: 20),
                 ),
               );
@@ -209,29 +210,31 @@ class FamilyRequests extends StatelessWidget {
                           color: Colors.redAccent,
                           onPressed: () async {
                             QuerySnapshot myUser = await firestore
-                                .collection('Users')
-                                .where('email', isEqualTo: myEmail)
+                                .collection(myNames.usersTable)
+                                .where(myNames.email, isEqualTo: myEmail)
                                 .get();
                             QuerySnapshot requestedUser = await firestore
-                                .collection('Users')
-                                .where('email',
+                                .collection(myNames.usersTable)
+                                .where(myNames.email,
                                     isEqualTo: familyRequestsIDs[index])
                                 .get();
                             await firestore
-                                .collection('Users')
+                                .collection(myNames.usersTable)
                                 .doc(myUser.docs[0].id)
                                 .set({
-                              'familyRequests': {
+                              myNames.familyRequests: {
                                 myEmail: {
                                   familyRequestsIDs[index]: FieldValue.delete()
                                 }
                               }
                             }, SetOptions(merge: true));
                             await firestore
-                                .collection('Users')
+                                .collection(myNames.usersTable)
                                 .doc(requestedUser.docs[0].id)
                                 .set({
-                              'familyRequests': {myEmail: FieldValue.delete()}
+                              myNames.familyRequests: {
+                                myEmail: FieldValue.delete()
+                              }
                             }, SetOptions(merge: true));
                           },
                           icon: Icon(Icons.cancel_outlined)),
@@ -242,36 +245,41 @@ class FamilyRequests extends StatelessWidget {
                           color: Color(0xffEA907A),
                           onPressed: () async {
                             QuerySnapshot myUser = await firestore
-                                .collection('Users')
-                                .where('email', isEqualTo: myEmail)
+                                .collection(myNames.usersTable)
+                                .where(myNames.email, isEqualTo: myEmail)
                                 .get();
                             QuerySnapshot requestedUser = await firestore
-                                .collection('Users')
-                                .where('email',
+                                .collection(myNames.usersTable)
+                                .where(myNames.email,
                                     isEqualTo: familyRequestsIDs[index])
                                 .get();
                             await firestore
-                                .collection('Users')
+                                .collection(myNames.usersTable)
                                 .doc(myUser.docs[0].id)
                                 .set({
-                              'familyRequests': {
+                              myNames.familyRequests: {
                                 myEmail: {
                                   familyRequestsIDs[index]: FieldValue.delete()
                                 }
                               },
-                              'family': {
+                              myNames.family: {
                                 familyRequestsIDs[index]: {
-                                  'name': requestedUser.docs[0]['name']
+                                  myNames.name: requestedUser.docs[0]
+                                      [myNames.name]
                                 }
                               }
                             }, SetOptions(merge: true));
                             await firestore
-                                .collection('Users')
+                                .collection(myNames.usersTable)
                                 .doc(requestedUser.docs[0].id)
                                 .set({
-                              'familyRequests': {myEmail: FieldValue.delete()},
-                              'family': {
-                                myEmail: {'name': myUser.docs[0]['name']}
+                              myNames.familyRequests: {
+                                myEmail: FieldValue.delete()
+                              },
+                              myNames.family: {
+                                myEmail: {
+                                  myNames.name: myUser.docs[0][myNames.name]
+                                }
                               }
                             }, SetOptions(merge: true));
                           },

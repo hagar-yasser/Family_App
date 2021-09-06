@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/authorization/Auth.dart';
+import 'package:family_app/myNames.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,8 +17,8 @@ class AddMembersWrapper extends StatelessWidget {
     return Scaffold(
         body: FutureBuilder<QuerySnapshot>(
             future: firestore
-                .collection('Users')
-                .where('email', isEqualTo: myEmail)
+                .collection(myNames.usersTable)
+                .where(myNames.email, isEqualTo: myEmail)
                 .get(),
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -27,15 +28,14 @@ class AddMembersWrapper extends StatelessWidget {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               }
-              return AddMembers(snapshot:snapshot);
+              return AddMembers(snapshot: snapshot);
             }));
   }
 }
 
 class AddMembers extends StatefulWidget {
-  
   final AsyncSnapshot<QuerySnapshot> snapshot;
-  const AddMembers({Key? key,required this.snapshot}) : super(key: key);
+  const AddMembers({Key? key, required this.snapshot}) : super(key: key);
 
   @override
   _AddMembersState createState() => _AddMembersState();
@@ -49,7 +49,7 @@ class _AddMembersState extends State<AddMembers> {
     User? user = Provider.of<Auth>(context, listen: false).getCurrentUser();
     myEmail = user!.email!;
     _chosenMembers = {
-      myEmail: {'name': user.displayName, 'points': 0}
+      myEmail: {myNames.name: user.displayName, myNames.points: 0}
     };
   }
 
@@ -57,7 +57,7 @@ class _AddMembersState extends State<AddMembers> {
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    final Map family = widget.snapshot.data!.docs[0]['family'];
+    final Map family = widget.snapshot.data!.docs[0][myNames.family];
     final List familyEmailsList = [];
     family.forEach((key, value) {
       familyEmailsList.add(key);
@@ -85,8 +85,8 @@ class _AddMembersState extends State<AddMembers> {
                         )),
                     Expanded(
                         child: Center(
-                      child: Text("Add Members",
-                          style: TextStyle(fontSize: 35)),
+                      child:
+                          Text("Add Members", style: TextStyle(fontSize: 35)),
                     ))
                   ],
                 ),
@@ -104,19 +104,18 @@ class _AddMembersState extends State<AddMembers> {
                                 (BuildContext context, int index) =>
                                     const Divider(),
                             itemCount: familyEmailsList.length,
-                            itemBuilder:
-                                (BuildContext context, int index) {
+                            itemBuilder: (BuildContext context, int index) {
                               return GestureDetector(
                                 child: Card(
-                                  color: _chosenMembers[
-                                              familyEmailsList[index]] !=
-                                          null
-                                      ? Color(0xffEA907A)
-                                      : Colors.white,
+                                  color:
+                                      _chosenMembers[familyEmailsList[index]] !=
+                                              null
+                                          ? Color(0xffEA907A)
+                                          : Colors.white,
                                   elevation: 8,
                                   child: Text(
                                     family[familyEmailsList[index]]
-                                        ['name'],
+                                        [myNames.name],
                                     style: TextStyle(fontSize: 20),
                                   ),
                                 ),
@@ -125,15 +124,13 @@ class _AddMembersState extends State<AddMembers> {
                                     if (_chosenMembers[
                                             familyEmailsList[index]] !=
                                         null) {
-                                      _chosenMembers.remove(
-                                          familyEmailsList[index]);
+                                      _chosenMembers
+                                          .remove(familyEmailsList[index]);
                                     } else {
-                                      _chosenMembers[
-                                              familyEmailsList[index]] =
+                                      _chosenMembers[familyEmailsList[index]] =
                                           family[familyEmailsList[index]];
-                                      _chosenMembers[
-                                              familyEmailsList[index]]
-                                          ['points'] = 0;
+                                      _chosenMembers[familyEmailsList[index]]
+                                          [myNames.points] = 0;
                                     }
                                   });
                                 },
@@ -147,8 +144,5 @@ class _AddMembersState extends State<AddMembers> {
         ),
       ),
     );
-  
-      
-    
   }
 }

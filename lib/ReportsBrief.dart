@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/authorization/Auth.dart';
+import 'package:family_app/myNames.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,35 +18,40 @@ class _ReportsBriefState extends State<ReportsBrief> {
   Future<DocumentSnapshot> checkActivitiesStates(
       FirebaseFirestore firestore, String email) async {
     QuerySnapshot myQuery = await firestore
-        .collection('Users')
-        .where('email', isEqualTo: email)
+        .collection(myNames.usersTable)
+        .where(myNames.email, isEqualTo: email)
         .get();
     DocumentSnapshot myDoc = myQuery.docs[0];
     String id = myDoc.id;
-    Map activities = myDoc['activities'];
+    Map activities = myDoc[myNames.activities];
     List activitiesIDs = [];
     activities.forEach((key, value) {
       activitiesIDs.add(key);
     });
     DateTime now = DateTime.now().toUtc();
     for (int i = 0; i < activitiesIDs.length; i++) {
-      if (now.compareTo(activities[activitiesIDs[i]]['endTime'].toDate()) > 0) {
+      if (now.compareTo(
+              activities[activitiesIDs[i]][myNames.endTime].toDate()) >
+          0) {
         DocumentSnapshot activityOriginal = await firestore
-            .collection('Activities')
+            .collection(myNames.activitiesTable)
             .doc(activitiesIDs[i])
             .get();
-        await firestore.collection('Users').doc(id).set({
-          'activities': {activitiesIDs[i]: FieldValue.delete()}
+        await firestore.collection(myNames.usersTable).doc(id).set({
+          myNames.activities: {activitiesIDs[i]: FieldValue.delete()}
         }, SetOptions(merge: true));
-        await firestore.collection('Users').doc(id).set({
-          'reports': {activitiesIDs[i]: (activityOriginal.data() as Map)}
+        await firestore.collection(myNames.usersTable).doc(id).set({
+          myNames.reports: {activitiesIDs[i]: (activityOriginal.data() as Map)}
         }, SetOptions(merge: true));
-        await firestore.collection('Activities').doc(activitiesIDs[i]).set({
-          'reportsSent': {myDoc['email']: true}
+        await firestore
+            .collection(myNames.activitiesTable)
+            .doc(activitiesIDs[i])
+            .set({
+          myNames.reportsSent: {myDoc[myNames.email]: true}
         }, SetOptions(merge: true));
       }
     }
-    return firestore.collection('Users').doc(id).get();
+    return firestore.collection(myNames.usersTable).doc(id).get();
   }
 
   @override
@@ -68,7 +74,7 @@ class _ReportsBriefState extends State<ReportsBrief> {
             child: Text('An Error occurred when fetching reports'),
           );
         }
-        Map? reports = (snapshot.data!.data()! as Map)['reports'];
+        Map? reports = (snapshot.data!.data()! as Map)[myNames.reports];
         List reportsIDs = [];
         if (reports != null) {
           reports.forEach((key, value) {
@@ -118,20 +124,21 @@ class _ReportsBriefState extends State<ReportsBrief> {
                                         children: [
                                           Text(
                                               reports![reportsIDs[index]]
-                                                  ['name'],
+                                                  [myNames.name],
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(fontSize: 20)),
                                           Text(
                                               (reports[reportsIDs[index]]
-                                                              ['members']
-                                                          [myEmail]['points'])
+                                                                  [myNames.members]
+                                                              [myEmail]
+                                                          [myNames.points])
                                                       .toString() +
                                                   "/" +
-                                                  (reports[reportsIDs[index]][
-                                                                  'reportRate'] ==
-                                                              reports[reportsIDs[
-                                                                      index]][
-                                                                  'activityRate']
+                                                  (reports[reportsIDs[index]][myNames
+                                                                  .reportRate] ==
+                                                              reports[reportsIDs[index]]
+                                                                  [myNames
+                                                                      .activityRate]
                                                           ? 1
                                                           : 7)
                                                       .toString(),
@@ -143,7 +150,7 @@ class _ReportsBriefState extends State<ReportsBrief> {
                                             child: Text(
                                               expandToListOfStrings(
                                                   (reports[reportsIDs[index]]
-                                                      ['members'])),
+                                                      [myNames.members])),
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
@@ -184,7 +191,7 @@ class _ReportsBriefState extends State<ReportsBrief> {
     String result = "";
     int count = 0;
     map.forEach((key, value) {
-      result += map[key]['name'];
+      result += map[key][myNames.name];
       if (count < map.length - 1) {
         result += ", ";
       }

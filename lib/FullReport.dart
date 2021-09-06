@@ -1,5 +1,6 @@
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
+import 'package:family_app/myNames.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:family_app/objects/Activity.dart';
@@ -58,7 +59,7 @@ class FullReport extends StatelessWidget {
                               controller: _controllerOne,
                               scrollDirection: Axis.horizontal,
                               children: [
-                                Text(activity['name'],
+                                Text(activity[myNames.name],
                                     style: TextStyle(fontSize: 35))
                               ],
                             ),
@@ -67,15 +68,19 @@ class FullReport extends StatelessWidget {
                       )
                     ],
                   ),
-                
-                  Text("End Time: "+displayTime(activity['endTime'].toDate()),
+                  Text(
+                      "End Time: " +
+                          displayTime(activity[myNames.endTime].toDate()),
                       style: TextStyle(color: Color(0xffAACDBE), fontSize: 20)),
                   Text('Members', style: TextStyle(fontSize: 30)),
                   Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: ListOfMembersReport(activity['members'],(activity['reportRate'] == activity['activityRate']
-                                  ? 1
-                                  : 7)),
+                    child: ListOfMembersReport(
+                        activity[myNames.members],
+                        (activity[myNames.reportRate] ==
+                                activity[myNames.activityRate]
+                            ? 1
+                            : 7)),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -86,7 +91,7 @@ class FullReport extends StatelessWidget {
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20)),
                         TextSpan(
-                            text: activity['activityRate'],
+                            text: activity[myNames.activityRate],
                             style: TextStyle(
                               fontSize: 20,
                             ))
@@ -102,11 +107,11 @@ class FullReport extends StatelessWidget {
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20)),
                         TextSpan(
-                            text: activity['reportRate'],
+                            text: activity[myNames.reportRate],
                             style: TextStyle(fontSize: 20))
                       ]),
                     ),
-                  ),  
+                  ),
                 ],
               ),
             )
@@ -118,7 +123,7 @@ class FullReport extends StatelessWidget {
 
   String displayTime(DateTime time) {
     String res = "";
-    res +="${time.year}-${time.month}-${time.day} ${time.hour}:${time.minute}";
+    res += "${time.year}-${time.month}-${time.day} ${time.hour}:${time.minute}";
     return res;
   }
 }
@@ -126,7 +131,7 @@ class FullReport extends StatelessWidget {
 class ListOfMembersReport extends StatelessWidget {
   final Map members;
   final int maxPoints;
-  const ListOfMembersReport(this.members,this.maxPoints);
+  const ListOfMembersReport(this.members, this.maxPoints);
 
   @override
   Widget build(BuildContext context) {
@@ -152,13 +157,14 @@ class ListOfMembersReport extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                 title: Text(
-                  members[membersList[index]]['name'],
+                  members[membersList[index]][myNames.name],
                   style: TextStyle(fontSize: 20),
                 ),
                 trailing: Text(
-                      (members[membersList[index]]['points']).toString() +
-                          '/' +maxPoints.toString(),
-                      style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
+                    (members[membersList[index]][myNames.points]).toString() +
+                        '/' +
+                        maxPoints.toString(),
+                    style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
               );
             },
             separatorBuilder: (BuildContext context, int index) =>

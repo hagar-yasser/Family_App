@@ -1,5 +1,6 @@
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
+import 'package:family_app/myNames.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:family_app/objects/Activity.dart';
@@ -58,7 +59,7 @@ class FullActivity extends StatelessWidget {
                               controller: _controllerOne,
                               scrollDirection: Axis.horizontal,
                               children: [
-                                Text(activity['name'],
+                                Text(activity[myNames.name],
                                     style: TextStyle(fontSize: 35))
                               ],
                             ),
@@ -68,19 +69,23 @@ class FullActivity extends StatelessWidget {
                     ],
                   ),
                   Text(
-                      (activity["members"][myEmail]['points']).toString() +
+                      (activity[myNames.members][myEmail][myNames.points])
+                              .toString() +
                           '/' +
-                          (activity['reportRate'] == activity['activityRate']
+                          (activity[myNames.reportRate] ==
+                                      activity[myNames.activityRate]
                                   ? 1
                                   : 7)
                               .toString(),
                       style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
-                  Text("End Time: "+displayTime(activity['endTime'].toDate()),
+                  Text(
+                      "End Time: " +
+                          displayTime(activity[myNames.endTime].toDate()),
                       style: TextStyle(color: Color(0xffAACDBE), fontSize: 20)),
                   Text('Members', style: TextStyle(fontSize: 30)),
                   Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: ListOfMembers(activity['members']),
+                    child: ListOfMembers(activity[myNames.members]),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -91,7 +96,7 @@ class FullActivity extends StatelessWidget {
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20)),
                         TextSpan(
-                            text: activity['activityRate'],
+                            text: activity[myNames.activityRate],
                             style: TextStyle(
                               fontSize: 20,
                             ))
@@ -107,7 +112,7 @@ class FullActivity extends StatelessWidget {
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20)),
                         TextSpan(
-                            text: activity['reportRate'],
+                            text: activity[myNames.reportRate],
                             style: TextStyle(fontSize: 20))
                       ]),
                     ),
@@ -149,7 +154,7 @@ class FullActivity extends StatelessWidget {
 
   String displayTime(DateTime time) {
     String res = "";
-    res +="${time.year}-${time.month}-${time.day} ${time.hour}:${time.minute}";
+    res += "${time.year}-${time.month}-${time.day} ${time.hour}:${time.minute}";
     return res;
   }
 }
@@ -182,7 +187,7 @@ class ListOfMembers extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                 title: Text(
-                  members[membersList[index]]['name'],
+                  members[membersList[index]][myNames.name],
                   style: TextStyle(fontSize: 20),
                 ),
               );

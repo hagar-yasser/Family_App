@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/authorization/Auth.dart';
+import 'package:family_app/myNames.dart';
 import 'package:family_app/objects/Activity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class _AddActivityState extends State<AddActivity> {
     User? user = Provider.of<Auth>(context, listen: false).getCurrentUser();
     myEmail = user!.email!;
     _members = {
-      myEmail: {'name': user.displayName, 'points': 0}
+      myEmail: {myNames.name: user.displayName, myNames.points: 0}
     };
   }
 
@@ -139,7 +140,8 @@ class _AddActivityState extends State<AddActivity> {
                                 return ListTile(
                                   title: Text(
                                     //members is a map not a list
-                                    _members[membersEmailsList[index]]['name'],
+                                    _members[membersEmailsList[index]]
+                                        [myNames.name],
                                     style: TextStyle(fontSize: 20),
                                   ),
                                 );
@@ -248,8 +250,8 @@ class _AddActivityState extends State<AddActivity> {
                                           'Please enter the activity name!')));
                             } else {
                               final userInDB = await firestore
-                                  .collection('Users')
-                                  .where('email', isEqualTo: myEmail)
+                                  .collection(myNames.usersTable)
+                                  .where(myNames.email, isEqualTo: myEmail)
                                   .get();
                               final timeAdded = new DateTime.now().toUtc();
                               final endTime = timeAdded
@@ -259,28 +261,30 @@ class _AddActivityState extends State<AddActivity> {
                                   .toUtc();
                               //add the activity to the activity Collection
                               final newActivity = {
-                                'name': _controller.text,
-                                'members': _members,
-                                'activityRate': _activityRateValue,
-                                'reportRate': _reportRateValue,
-                                'timeAdded': timeAdded,
-                                'endTime': endTime
+                                myNames.name: _controller.text,
+                                myNames.members: _members,
+                                myNames.activityRate: _activityRateValue,
+                                myNames.reportRate: _reportRateValue,
+                                myNames.timeAdded: timeAdded,
+                                myNames.endTime: endTime
                               };
                               final activityRef = await firestore
-                                  .collection('Activities')
+                                  .collection(myNames.activitiesTable)
                                   .add(newActivity);
                               final activityID = activityRef.id;
                               _members.forEach((key, value) async {
                                 var member = await firestore
-                                    .collection('Users')
-                                    .where('email', isEqualTo: key)
+                                    .collection(myNames.usersTable)
+                                    .where(myNames.email, isEqualTo: key)
                                     .get();
                                 DocumentSnapshot myMember = member.docs[0];
-                                
+
                                 await firestore
-                                    .collection('Users')
+                                    .collection(myNames.usersTable)
                                     .doc(myMember.id)
-                                    .set({'activities':{activityID:newActivity}}, SetOptions(merge: true));
+                                    .set({
+                                  myNames.activities: {activityID: newActivity}
+                                }, SetOptions(merge: true));
                               });
                               Navigator.pop(context);
                             }
