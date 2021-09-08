@@ -34,38 +34,49 @@ class FullReport extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
-                        child: IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: Icon(
-                              Icons.keyboard_arrow_left_rounded,
-                              color: Color(0xffF7A440),
-                              size: 50,
-                            )),
-                      ),
-                      SizedBox(
-                        width: 270,
-                        height: 80,
+                      Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Scrollbar(
-                            interactive: true,
-                            showTrackOnHover: true,
-                            controller: _controllerOne,
-                            child: ListView(
-                              controller: _controllerOne,
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                Text(activity[myNames.name],
-                                    style: TextStyle(fontSize: 35))
-                              ],
-                            ),
-                          ),
+                          padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
+                          child: IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: Icon(
+                                Icons.keyboard_arrow_left_rounded,
+                                color: Color(0xffF7A440),
+                                size: 50,
+                              )),
+                        ),
+                      ),
+                      Spacer(),
+                      Expanded(
+                        flex: 5,
+                        child: Text(
+                          activity[myNames.name],
+                          style: TextStyle(fontSize: 35),
+                          // overflow: TextOverflow.ellipsis,
                         ),
                       )
+                      // SizedBox(
+                      //   width: 270,
+                      //   height: 80,
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.all(8.0),
+                      //     child: Scrollbar(
+                      //       interactive: true,
+                      //       showTrackOnHover: true,
+                      //       controller: _controllerOne,
+                      //       child: ListView(
+                      //         controller: _controllerOne,
+                      //         scrollDirection: Axis.horizontal,
+                      //         children: [
+                      //           Text(activity[myNames.name],
+                      //               style: TextStyle(fontSize: 35))
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // )
                     ],
                   ),
                   Text(

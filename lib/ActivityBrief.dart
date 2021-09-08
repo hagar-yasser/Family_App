@@ -134,16 +134,17 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.center,
                                               children: [
-                                                Text(
-                                                  activities[
-                                                          activitiesIDs[index]]
-                                                      [myNames.name],
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style:
-                                                      TextStyle(fontSize: 20),
-                                                  strutStyle: StrutStyle(
-                                                      forceStrutHeight: true),
+                                                Expanded(
+                                                  child: Text(
+                                                    activities[activitiesIDs[
+                                                        index]][myNames.name],
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style:
+                                                        TextStyle(fontSize: 20),
+                                                    // strutStyle: StrutStyle(
+                                                    //     forceStrutHeight: true),
+                                                  ),
                                                 ),
                                                 Text(
                                                   (activities[activitiesIDs[index]]
@@ -166,13 +167,15 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                       color: Color(0xffAACDBE),
                                                       fontSize: 30),
                                                 ),
-                                                Container(
-                                                  width: 200,
-                                                  child: Text(
-                                                    expandToListOfStrings(
-                                                        (members)),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                Expanded(
+                                                  child: Container(
+                                                    width: 200,
+                                                    child: Text(
+                                                      expandToListOfStrings(
+                                                          (members)),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
                                                   ),
                                                 ),
                                               ],

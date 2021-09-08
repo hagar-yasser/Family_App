@@ -74,69 +74,99 @@ class _AddMembersState extends State<AddMembers> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    IconButton(
-                        onPressed: () {
-                          Navigator.pop(context, _chosenMembers);
-                        },
-                        icon: Icon(
-                          Icons.keyboard_arrow_left_rounded,
-                          color: Color(0xffF7A440),
-                          size: 50,
-                        )),
                     Expanded(
-                        child: Center(
-                      child:
-                          Text("Add Members", style: TextStyle(fontSize: 35)),
-                    ))
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
+                        child: IconButton(
+                            onPressed: () {
+                              Navigator.pop(context, _chosenMembers);
+                            },
+                            icon: Icon(
+                              Icons.keyboard_arrow_left_rounded,
+                              color: Color(0xffF7A440),
+                              size: 50,
+                            )),
+                      ),
+                    ),
+                    Spacer(),
+                    Expanded(
+                      flex: 5,
+                      child: Text(
+                        "Add Members",
+                        style: TextStyle(fontSize: 35),
+                        // overflow: TextOverflow.ellipsis,
+                      ),
+                    )
+                    // IconButton(
+                    //     onPressed: () {
+                    //       Navigator.pop(context, _chosenMembers);
+                    //     },
+                    //     icon: Icon(
+                    //       Icons.keyboard_arrow_left_rounded,
+                    //       color: Color(0xffF7A440),
+                    //       size: 50,
+                    //     )),
+                    // Expanded(
+                    //     child: Center(
+                    //   child:
+                    //       Text("Add Members", style: TextStyle(fontSize: 35)),
+                    // ))
                   ],
                 ),
-                Container(
-                  height: MediaQuery.of(context).size.height * 0.8,
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  child: (widget.snapshot.data == null ||
-                          familyEmailsList.length == 0)
-                      ? Center()
-                      : Scrollbar(
-                          interactive: true,
-                          showTrackOnHover: true,
-                          child: ListView.separated(
-                            separatorBuilder:
-                                (BuildContext context, int index) =>
-                                    const Divider(),
-                            itemCount: familyEmailsList.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return GestureDetector(
-                                child: Card(
-                                  color:
-                                      _chosenMembers[familyEmailsList[index]] !=
-                                              null
-                                          ? Color(0xffEA907A)
-                                          : Colors.white,
-                                  elevation: 8,
-                                  child: Text(
-                                    family[familyEmailsList[index]]
-                                        [myNames.name],
-                                    style: TextStyle(fontSize: 20),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.8,
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: (widget.snapshot.data == null ||
+                            familyEmailsList.length == 0)
+                        ? Center()
+                        : Scrollbar(
+                            interactive: true,
+                            showTrackOnHover: true,
+                            child: ListView.separated(
+                              separatorBuilder:
+                                  (BuildContext context, int index) =>
+                                      const Divider(),
+                              itemCount: familyEmailsList.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return GestureDetector(
+                                  child: Card(
+                                    color: _chosenMembers[
+                                                familyEmailsList[index]] !=
+                                            null
+                                        ? Color(0xffEA907A)
+                                        : Colors.white,
+                                    elevation: 8,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        family[familyEmailsList[index]]
+                                            [myNames.name],
+                                        style: TextStyle(fontSize: 20),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                onTap: () {
-                                  setState(() {
-                                    if (_chosenMembers[
-                                            familyEmailsList[index]] !=
-                                        null) {
-                                      _chosenMembers
-                                          .remove(familyEmailsList[index]);
-                                    } else {
-                                      _chosenMembers[familyEmailsList[index]] =
-                                          family[familyEmailsList[index]];
-                                      _chosenMembers[familyEmailsList[index]]
-                                          [myNames.points] = 0;
-                                    }
-                                  });
-                                },
-                              );
-                            },
-                          )),
+                                  onTap: () {
+                                    setState(() {
+                                      if (_chosenMembers[
+                                              familyEmailsList[index]] !=
+                                          null) {
+                                        _chosenMembers
+                                            .remove(familyEmailsList[index]);
+                                      } else {
+                                        _chosenMembers[
+                                                familyEmailsList[index]] =
+                                            family[familyEmailsList[index]];
+                                        _chosenMembers[familyEmailsList[index]]
+                                            [myNames.points] = 0;
+                                      }
+                                    });
+                                  },
+                                );
+                              },
+                            )),
+                  ),
                 ),
               ],
             )

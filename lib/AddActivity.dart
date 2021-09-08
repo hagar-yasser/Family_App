@@ -64,20 +64,35 @@ class _AddActivityState extends State<AddActivity> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: Icon(
-                              Icons.keyboard_arrow_left_rounded,
-                              color: Color(0xffF7A440),
-                              size: 50,
-                            )),
                         Expanded(
-                            child: Center(
-                          child: Text("Add Activity",
-                              style: TextStyle(fontSize: 35)),
-                        ))
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
+                            child: IconButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                icon: Icon(
+                                  Icons.keyboard_arrow_left_rounded,
+                                  color: Color(0xffF7A440),
+                                  size: 50,
+                                )),
+                          ),
+                        ),
+                        Spacer(),
+                        Expanded(
+                          flex: 5,
+                          child: Text(
+                            "Add Activity",
+                            style: TextStyle(fontSize: 35),
+                            // overflow: TextOverflow.ellipsis,
+                          ),
+                        )
+
+                        // Expanded(
+                        //     child: Center(
+                        //   child: Text("Add Activity",
+                        //       style: TextStyle(fontSize: 35)),
+                        // ))
                       ],
                     ),
                     Padding(

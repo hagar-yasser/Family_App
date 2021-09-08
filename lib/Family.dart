@@ -41,15 +41,16 @@ class _FamilyState extends State<Family> {
             onRefresh: () async {
               setState(() {});
             },
-            child: ListView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: FamilyType(
-                      family: family, familyRequests: familyRequests),
-                )
-              ],
-            ),
+            child: FamilyType(family: family, familyRequests: familyRequests),
+            // child: ListView(
+            //   children: [
+            //     Padding(
+            //       padding: const EdgeInsets.all(30.0),
+            // child: FamilyType(
+            //     family: family, familyRequests: familyRequests),
+            //     )
+            //   ],
+            // ),
           ),
         );
       },
@@ -74,52 +75,105 @@ class _FamilyTypeState extends State<FamilyType> {
       .chain(CurveTween(curve: Curves.ease));
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Spacer(
-              flex: 2,
+    return DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            flexibleSpace: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TabBar(
+                  indicator: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50), // Creates border
+                      color: Color(0xffEA907A)),
+                  tabs: [
+                    Tab(
+                      child: Text(
+                        "My Family",
+                        style: TextStyle(
+                            fontFeatures: Theme.of(context)
+                                .textTheme
+                                .bodyText1!
+                                .fontFeatures,
+                            fontSize: 15,
+                            color:
+                                Theme.of(context).textTheme.bodyText1!.color),
+                      ),
+                    ),
+                    Tab(
+                      child: Text("Family Requests",
+                          style: TextStyle(
+                              fontFeatures: Theme.of(context)
+                                  .textTheme
+                                  .bodyText1!
+                                  .fontFeatures,
+                              fontSize: 15,
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyText1!
+                                  .color)),
+                    )
+                  ],
+                ),
+              ),
             ),
-            MyButton(
-              action: () {
-                setState(() {
-                  showRequests = false;
-                });
-              },
-              text: 'My Family',
-            ),
-            Spacer(
-              flex: 1,
-            ),
-            MyButton(
-              action: () {
-                setState(() {
-                  showRequests = true;
-                });
-              },
-              text: 'Family Requests',
-            ),
-            Spacer(
-              flex: 2,
-            ),
-          ],
-        ),
-        AnimatedSwitcher(
-            duration: const Duration(milliseconds: 500),
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return SlideTransition(
-                  child: child, position: animation.drive(tween));
-            },
-            child: showRequests
-                ? FamilyRequests(familyRequests: widget.familyRequests)
-                : FamilyMembers(
-                    family: widget.family,
-                  ))
-      ],
-    );
+          ),
+          body: TabBarView(
+            children: [
+              FamilyMembers(
+                family: widget.family,
+              ),
+              FamilyRequests(familyRequests: widget.familyRequests)
+            ],
+          ),
+        ));
+    // return Column(
+    //   children: [
+    //     Row(
+    //       crossAxisAlignment: CrossAxisAlignment.start,
+    //       mainAxisAlignment: MainAxisAlignment.center,
+    //       children: [
+    //         Spacer(
+    //           flex: 2,
+    //         ),
+    //         MyButton(
+    //           action: () {
+    //             setState(() {
+    //               showRequests = false;
+    //             });
+    //           },
+    //           text: 'My Family',
+    //         ),
+    //         Spacer(
+    //           flex: 1,
+    //         ),
+    //         MyButton(
+    //           action: () {
+    //             setState(() {
+    //               showRequests = true;
+    //             });
+    //           },
+    //           text: 'Family Requests',
+    //         ),
+    //         Spacer(
+    //           flex: 2,
+    //         ),
+    //       ],
+    //     ),
+    //     AnimatedSwitcher(
+    //         duration: const Duration(milliseconds: 500),
+    //         transitionBuilder: (Widget child, Animation<double> animation) {
+    //           return SlideTransition(
+    //               child: child, position: animation.drive(tween));
+    //         },
+    //         child: showRequests
+    //             ? FamilyRequests(familyRequests: widget.familyRequests)
+    // : FamilyMembers(
+    //     family: widget.family,
+    //   ))
+    //   ],
+    // );
   }
 }
 
@@ -135,30 +189,29 @@ class FamilyMembers extends StatelessWidget {
       familyIDs.add(key);
     });
     return Container(
-      height: 400,
-      width: 300,
-      child: Card(
-        color: Colors.white,
-        elevation: 8,
-        child: Scrollbar(
-          interactive: true,
-          isAlwaysShown: true,
-          showTrackOnHover: true,
+      // height: 400,
+      // width: 300,
+      child: Scrollbar(
+        interactive: true,
+        isAlwaysShown: true,
+        showTrackOnHover: true,
+        controller: _controller,
+        child: ListView.separated(
+          itemCount: familyIDs.length,
           controller: _controller,
-          child: ListView.separated(
-            itemCount: familyIDs.length,
-            controller: _controller,
-            itemBuilder: (BuildContext context, int index) {
-              return ListTile(
+          itemBuilder: (BuildContext context, int index) {
+            return Card(
+              elevation: 8,
+              child: ListTile(
                 title: Text(
                   family[familyIDs[index]][myNames.name],
                   style: TextStyle(fontSize: 20),
                 ),
-              );
-            },
-            separatorBuilder: (BuildContext context, int index) =>
-                const Divider(),
-          ),
+              ),
+            );
+          },
+          separatorBuilder: (BuildContext context, int index) =>
+              const Divider(),
         ),
       ),
     );
@@ -182,21 +235,20 @@ class FamilyRequests extends StatelessWidget {
         familyRequestsIDs.add(key);
       });
     return Container(
-      height: 400,
-      width: 400,
-      child: Card(
-        color: Colors.white,
-        elevation: 8,
-        child: Scrollbar(
-          interactive: true,
-          isAlwaysShown: true,
-          showTrackOnHover: true,
+      // height: 400,
+      // width: 400,
+      child: Scrollbar(
+        interactive: true,
+        isAlwaysShown: true,
+        showTrackOnHover: true,
+        controller: _controller,
+        child: ListView.separated(
+          itemCount: familyRequestsIDs.length,
           controller: _controller,
-          child: ListView.separated(
-            itemCount: familyRequestsIDs.length,
-            controller: _controller,
-            itemBuilder: (BuildContext context, int index) {
-              return Column(children: [
+          itemBuilder: (BuildContext context, int index) {
+            return Card(
+              elevation: 8,
+              child: Column(children: [
                 Text(
                   familyRequestsIDs[index],
                   style: TextStyle(fontSize: 20),
@@ -287,11 +339,11 @@ class FamilyRequests extends StatelessWidget {
                     ),
                   ],
                 ),
-              ]);
-            },
-            separatorBuilder: (BuildContext context, int index) =>
-                const Divider(),
-          ),
+              ]),
+            );
+          },
+          separatorBuilder: (BuildContext context, int index) =>
+              const Divider(),
         ),
       ),
     );

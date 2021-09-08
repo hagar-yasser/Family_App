@@ -113,14 +113,17 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
               scaffoldBackgroundColor: Colors.white,
               textTheme: TextTheme(
-                  bodyText2: GoogleFonts.pacifico(
-                      textStyle: TextStyle(color: Color(0xffF7A440))),
-                  bodyText1: GoogleFonts.pacifico(
-                      textStyle: TextStyle(color: Color(0xffF7A440))),
-                  subtitle1: GoogleFonts.pacifico(
+                  bodyText2: GoogleFonts.patrickHand(
                       textStyle: TextStyle(
                           color: Color(0xffF7A440),
-                          fontWeight: FontWeight.w100)))),
+                          fontWeight: FontWeight.w800)),
+                  bodyText1: GoogleFonts.patrickHand(
+                      textStyle: TextStyle(
+                          color: Color(0xffF7A440),
+                          fontWeight: FontWeight.w800)),
+                  subtitle1: GoogleFonts.patrickHand(
+                      textStyle: TextStyle(color: Color(0xffF7A440)),
+                      fontWeight: FontWeight.w800))),
           title: 'FamilyApp trial',
           home: Wrapper()),
     );
