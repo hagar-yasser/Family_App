@@ -36,9 +36,10 @@ class _ReportsBriefState extends State<ReportsBrief> {
         final internetCheck =
             await firestore.collection(myNames.usersTable).doc(id).get();
         if (internetCheck.metadata.isFromCache) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(
-                  "A problem occurred when updating your reports. Please check your internet connectivity")));
+          if (this.mounted)
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                    "A problem occurred when updating your reports. Please check your internet connectivity")));
         } else {
           DocumentSnapshot activityOriginal = await firestore
               .collection(myNames.activitiesTable)

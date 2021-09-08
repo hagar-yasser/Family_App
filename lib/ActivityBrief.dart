@@ -211,11 +211,12 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                           .get();
                                                   if (internetCheck
                                                       .metadata.isFromCache) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(SnackBar(
-                                                            content: Text(
-                                                                "A problem occurred when quitting the activity. Please check your internet connectivity")));
+                                                    if (this.mounted)
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(SnackBar(
+                                                              content: Text(
+                                                                  "A problem occurred when quitting the activity. Please check your internet connectivity")));
                                                   } else {
                                                     await firestore
                                                         .collection(myNames
@@ -300,9 +301,10 @@ class _ActivityBriefState extends State<ActivityBrief> {
           .doc(docSnapshot.data!.id)
           .get();
       if (internetCheck.metadata.isFromCache) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-                "A problem occurred when updating your points. Please check your internet connectivity")));
+        if (this.mounted)
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                  "A problem occurred when updating your points. Please check your internet connectivity")));
         return;
       }
 
