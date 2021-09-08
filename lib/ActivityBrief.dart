@@ -202,29 +202,47 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                       docSnapshot);
                                                 } else {
                                                   //REMOVE ME FROM THE LIST OF MEMBERS OF THIS ACTIVITY IN THE ACTIVITIES TABLE
-                                                  await firestore
-                                                      .collection(myNames
-                                                          .activitiesTable)
-                                                      .doc(activitiesIDs[index])
-                                                      .set({
-                                                    myNames.members: {
-                                                      myEmail:
-                                                          FieldValue.delete()
-                                                    }
-                                                  }, SetOptions(merge: true));
-                                                  //REMOVE THIS ACTIVITY FROM MY ACTIVITIES IN THE USER TABLE
-                                                  activities.remove(
-                                                      activitiesIDs[index]);
-                                                  await firestore
-                                                      .collection(
-                                                          myNames.usersTable)
-                                                      .doc(docSnapshot.data!.id)
-                                                      .set({
-                                                    myNames.activities: {
-                                                      activitiesIDs[index]:
-                                                          FieldValue.delete()
-                                                    }
-                                                  }, SetOptions(merge: true));
+                                                  final internetCheck =
+                                                      await firestore
+                                                          .collection(myNames
+                                                              .usersTable)
+                                                          .doc(docSnapshot
+                                                              .data!.id)
+                                                          .get();
+                                                  if (internetCheck
+                                                      .metadata.isFromCache) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(SnackBar(
+                                                            content: Text(
+                                                                "A problem occurred when quitting the activity. Please check your internet connectivity")));
+                                                  } else {
+                                                    await firestore
+                                                        .collection(myNames
+                                                            .activitiesTable)
+                                                        .doc(activitiesIDs[
+                                                            index])
+                                                        .set({
+                                                      myNames.members: {
+                                                        myEmail:
+                                                            FieldValue.delete()
+                                                      }
+                                                    }, SetOptions(merge: true));
+                                                    //REMOVE THIS ACTIVITY FROM MY ACTIVITIES IN THE USER TABLE
+                                                    activities.remove(
+                                                        activitiesIDs[index]);
+                                                    await firestore
+                                                        .collection(
+                                                            myNames.usersTable)
+                                                        .doc(docSnapshot
+                                                            .data!.id)
+                                                        .set({
+                                                      myNames.activities: {
+                                                        activitiesIDs[index]:
+                                                            FieldValue.delete()
+                                                      }
+                                                    }, SetOptions(merge: true));
+                                                  }
                                                 }
                                               }
                                             },
@@ -277,6 +295,17 @@ class _ActivityBriefState extends State<ActivityBrief> {
       activity[myNames.members][email][myNames.points] = previousPoints + 1;
       activity[myNames.lastDone] = clickedTime;
       //UPDATE THE ACTIVITY.ID IN THE ACTIVITIES TABLE WITH MY POINTS
+      final internetCheck = await firestore
+          .collection(myNames.usersTable)
+          .doc(docSnapshot.data!.id)
+          .get();
+      if (internetCheck.metadata.isFromCache) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                "A problem occurred when updating your points. Please check your internet connectivity")));
+        return;
+      }
+
       await firestore.collection(myNames.activitiesTable).doc(activityID).set({
         myNames.members: {
           email: {

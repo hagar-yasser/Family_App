@@ -33,22 +33,34 @@ class _ReportsBriefState extends State<ReportsBrief> {
       if (now.compareTo(
               activities[activitiesIDs[i]][myNames.endTime].toDate()) >
           0) {
-        DocumentSnapshot activityOriginal = await firestore
-            .collection(myNames.activitiesTable)
-            .doc(activitiesIDs[i])
-            .get();
-        await firestore.collection(myNames.usersTable).doc(id).set({
-          myNames.activities: {activitiesIDs[i]: FieldValue.delete()}
-        }, SetOptions(merge: true));
-        await firestore.collection(myNames.usersTable).doc(id).set({
-          myNames.reports: {activitiesIDs[i]: (activityOriginal.data() as Map)}
-        }, SetOptions(merge: true));
-        await firestore
-            .collection(myNames.activitiesTable)
-            .doc(activitiesIDs[i])
-            .set({
-          myNames.reportsSent: {myDoc[myNames.email]: true}
-        }, SetOptions(merge: true));
+        final internetCheck =
+            await firestore.collection(myNames.usersTable).doc(id).get();
+        if (internetCheck.metadata.isFromCache) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                  "A problem occurred when updating your reports. Please check your internet connectivity")));
+        } else {
+          DocumentSnapshot activityOriginal = await firestore
+              .collection(myNames.activitiesTable)
+              .doc(activitiesIDs[i])
+              .get();
+          await firestore.collection(myNames.usersTable).doc(id).set({
+            myNames.activities: {activitiesIDs[i]: FieldValue.delete()}
+          }, SetOptions(merge: true));
+          print(
+              "activity original data: " + activityOriginal.data().toString());
+          await firestore.collection(myNames.usersTable).doc(id).set({
+            myNames.reports: {
+              activitiesIDs[i]: (activityOriginal.data() as Map)
+            }
+          }, SetOptions(merge: true));
+          await firestore
+              .collection(myNames.activitiesTable)
+              .doc(activitiesIDs[i])
+              .set({
+            myNames.reportsSent: {myDoc[myNames.email]: true}
+          }, SetOptions(merge: true));
+        }
       }
     }
     return firestore.collection(myNames.usersTable).doc(id).get();
