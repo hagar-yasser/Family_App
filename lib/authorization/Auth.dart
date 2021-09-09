@@ -11,7 +11,8 @@ class Auth {
     return MyUser(user.email, user.displayName);
   }
 
-  void reloadUserData() async {
+  Future<void> reloadUserData() async {
+    print('current auth user is ' + auth.currentUser.toString());
     if (auth.currentUser != null) {
       try {
         await auth.currentUser!.reload();
@@ -19,6 +20,10 @@ class Auth {
         print("couldn't reload currentUser " + e.toString());
       }
     }
+  }
+
+  Future<void> resetPassword(String email) async {
+    await auth.sendPasswordResetEmail(email: email);
   }
 
   Stream<MyUser?> get user {
@@ -29,7 +34,7 @@ class Auth {
     UserCredential result =
         await auth.signInWithEmailAndPassword(email: email, password: password);
     final User user = result.user!;
-    
+
     if (!user.emailVerified) {
       await auth.signOut();
       throw new Exception("Account email not verified yet");

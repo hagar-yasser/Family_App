@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_app/MyRectangularButton.dart';
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/authorization/Auth.dart';
+import 'package:family_app/myNames.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -68,7 +69,8 @@ class _ProfileState extends State<Profile> {
                               child: MyRoundedLoadingButton(
                                 child: Text('Send family request'),
                                 action: () async {
-                                  await sendFamilyRequest(_controller.text,authProvider.getCurrentUser());
+                                  await sendFamilyRequest(_controller.text,
+                                      authProvider.getCurrentUser());
                                 },
                               ),
                             )
@@ -89,33 +91,34 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Future<void> sendFamilyRequest(String email,User? user) async {
+  Future<void> sendFamilyRequest(String email, User? user) async {
     if (email.isEmpty) {
       _showMessageDialog(context, "please enter a valid email", "");
       return;
     } else {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-     
-      String myEmail = user!.email!.replaceAll('.', '_');
-      email = email.replaceAll('.', '_');
+
+      String myEmail = user!.email!;
+
       QuerySnapshot myUser = await firestore
-          .collection('Users')
-          .where('email', isEqualTo: myEmail)
+          .collection(myNames.usersTable)
+          .where(myNames.email, isEqualTo: myEmail)
           .get();
       QuerySnapshot requestedUser = await firestore
-          .collection('Users')
-          .where('email', isEqualTo: email)
+          .collection(myNames.usersTable)
+          .where(myNames.email, isEqualTo: email)
           .get();
       if (requestedUser.docs.length == 0) {
         _showMessageDialog(
             context, "There is no registered user with this email", "");
         return;
       }
-      Map family = myUser.docs[0]['family'];
-      if(family[email]!=null){
+      Map family = myUser.docs[0][myNames.family];
+      if (family[email] != null) {
         _showMessageDialog(context, "You are already family members", "");
+        return;
       }
-      Map familyRequests = myUser.docs[0]['familyRequests'];
+      Map familyRequests = myUser.docs[0][myNames.familyRequests];
       if (familyRequests[email] != null ||
           (familyRequests[myEmail] != null &&
               familyRequests[myEmail][email] != null)) {
@@ -123,13 +126,21 @@ class _ProfileState extends State<Profile> {
         return;
       }
       await firestore
-          .collection('Users')
+          .collection(myNames.usersTable)
           .doc(myUser.docs[0].id)
-          .update({'familyRequests.' + email + '.' + myEmail: 'pending'});
+          .set({
+        myNames.familyRequests: {
+          email: {myEmail: 'pending'}
+        }
+      }, SetOptions(merge: true));
       await firestore
-          .collection('Users')
+          .collection(myNames.usersTable)
           .doc(requestedUser.docs[0].id)
-          .update({'familyRequests.' + email + '.' + myEmail: 'pending'});
+          .set({
+        myNames.familyRequests: {
+          email: {myEmail: 'pending'}
+        }
+      }, SetOptions(merge: true));
     }
   }
 

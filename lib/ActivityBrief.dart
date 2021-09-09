@@ -3,6 +3,7 @@ import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:family_app/database/MyDocument.dart';
+import 'package:family_app/myNames.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -21,14 +22,36 @@ class ActivityBrief extends StatefulWidget {
 
 class _ActivityBriefState extends State<ActivityBrief> {
   ScrollController _scrollController = ScrollController();
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  late final myUserDataStream;
+  @override
+  void initState() {
+    super.initState();
+    String? id = Provider.of<MyDocument>(context, listen: false).id;
+    myUserDataStream =
+        firestore.collection(myNames.usersTable).doc(id).snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     String? id = Provider.of<MyDocument>(context).id;
+    double height = (MediaQuery.of(context).size.height);
+    var padding = MediaQuery.of(context).padding;
+    double height1 = height - padding.top - padding.bottom;
 
+    // Height (without status bar)
+    double height2 = height - padding.top;
+
+    // Height (without status and toolbar)
+    double height3 = height - padding.top - kToolbarHeight;
+    // print("height" + height.toString());
+    // print("height1" + height1.toString());
+    // print("height2" + height2.toString());
+    // print("height3" + height3.toString());
+    // print("text scale factor "+MediaQuery.of(context).textScaleFactor.toString());
+    // print("width"+(MediaQuery.of(context).size.width*MediaQuery.of(context).devicePixelRatio).toString());
     return Scaffold(
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
@@ -38,7 +61,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
           },
         ),
         body: StreamBuilder<DocumentSnapshot>(
-            stream: firestore.collection('Users').doc(id).snapshots(),
+            stream: myUserDataStream,
             builder: (BuildContext context,
                 AsyncSnapshot<DocumentSnapshot> docSnapshot) {
               if (docSnapshot.hasError) {
@@ -51,168 +74,262 @@ class _ActivityBriefState extends State<ActivityBrief> {
                   !docSnapshot.hasData) {
                 return Center(child: CircularProgressIndicator());
               }
+              // return Center(
+              //   child: MyRoundedLoadingButton(
+              //     child: Text('Delete field'),
+              //     action: () async {
+              //       QuerySnapshot s = await firestore
+              //           .collection('Users')
+              //           .where('email', isEqualTo: "hagar.ay7aga@ay7aga[jf")
+              //           .get();
+              //       await firestore.collection('Users').doc(s.docs[0].id).set({
+              //         'activities': {
+              //           'activity.awelwa7ed': FieldValue.delete()
+              //         }
+              //       }, SetOptions(merge: true));
+
+              //     },
+              //   ),
+              // );
+              final len = docSnapshot.data![myNames.activities].length;
               return Center(
                 child: RefreshIndicator(
                   onRefresh: () async {
                     setState(() {});
                   },
-                  child: Scrollbar(
-                    isAlwaysShown: true,
-                    controller: _scrollController,
-                    interactive: true,
-                    showTrackOnHover: true,
-                    child: ListView.separated(
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const Divider(),
-                      physics: AlwaysScrollableScrollPhysics(),
-                      controller: _scrollController,
-                      itemCount: docSnapshot.data!['activities'].length ?? 0,
-                      itemBuilder: (BuildContext context, int index) {
-                        Map activities = docSnapshot.data!['activities'];
-                        List activitiesIDs = [];
-                        activities.forEach((key, value) {
-                          activitiesIDs.add(key);
-                        });
-                        Map members =
-                            activities[activitiesIDs[index]]['members'] as Map;
-                        return Container(
-                          height: 200,
-                          width: 300,
+                  child: (len == null || len == 0)
+                      ? Center(
                           child: Card(
-                            color: Colors.white,
                             elevation: 8,
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          32, 8.0, 8.0, 4.0),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                    activities[activitiesIDs[
-                                                        index]]['name'],
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                        fontSize: 20)),
-                                                Text(
-                                                    (activities[activitiesIDs[index]]
-                                                                        ['members']
-                                                                    [myEmail]
-                                                                ['points'])
-                                                            .toString() +
-                                                        "/" +
-                                                        (activities[activitiesIDs[index]]
-                                                                        [
-                                                                        'reportRate'] ==
-                                                                    activities[
-                                                                            activitiesIDs[index]]
-                                                                        [
-                                                                        'activityRate']
-                                                                ? 1
-                                                                : 7)
-                                                            .toString(),
-                                                    style: TextStyle(
-                                                        color:
-                                                            Color(0xffAACDBE),
-                                                        fontSize: 30)),
-                                                Container(
-                                                  width: 200,
-                                                  child: Text(
-                                                    expandToListOfStrings(
-                                                        (members)),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          IconButton(
-                                            color: Color(0xffF7A440),
-                                            onPressed: () async {
-                                              var actionInsideFullActivity =
-                                                  await Navigator.of(context)
-                                                      .pushNamed(
-                                                          '/fullActivity',
-                                                          arguments: activities[
-                                                              activitiesIDs[
-                                                                  index]]);
-                                              print(actionInsideFullActivity);
-                                              if (actionInsideFullActivity !=
-                                                  null) {
-                                                if (actionInsideFullActivity ==
-                                                    "Done") {
-                                                  checkActivityDone(
-                                                      activities[
-                                                          activitiesIDs[index]],
-                                                      activitiesIDs[index],
-                                                      myEmail,
-                                                      firestore,
-                                                      docSnapshot);
-                                                } else {
-                                                  //REMOVE ME FROM THE LIST OF MEMBERS OF THIS ACTIVITY IN THE ACTIVITIES TABLE
-                                                  await firestore
-                                                      .collection('Activities')
-                                                      .doc(activitiesIDs[index])
-                                                      .update({
-                                                    'members.' + myEmail:
-                                                        FieldValue.delete()
-                                                  });
-                                                  //REMOVE THIS ACTIVITY FROM MY ACTIVITIES IN THE USER TABLE
-                                                  activities.remove(
-                                                      activitiesIDs[index]);
-                                                  await firestore
-                                                      .collection("Users")
-                                                      .doc(docSnapshot.data!.id)
-                                                      .update({
-                                                    'activities.' +
-                                                            activitiesIDs[
-                                                                index]:
-                                                        FieldValue.delete()
-                                                  });
-                                                }
-                                              }
-                                            },
-                                            icon: Icon(Icons
-                                                .keyboard_arrow_right_rounded),
-                                            iconSize: 40,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  MyRoundedLoadingButton(
-                                    action: () async {
-                                      await checkActivityDone(
-                                          activities[activitiesIDs[index]],
-                                          activitiesIDs[index],
-                                          myEmail,
-                                          firestore,
-                                          docSnapshot);
-                                    },
-                                    child: Text('Done'),
-                                  )
-                                ],
+                              child: Text(
+                                "There are no activities. Try to add an activity from the button below.",
+                                style: TextStyle(fontSize: 20),
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
+                        )
+                      : Scrollbar(
+                          isAlwaysShown: true,
+                          controller: _scrollController,
+                          interactive: true,
+                          showTrackOnHover: true,
+                          child: ListView.separated(
+                            separatorBuilder:
+                                (BuildContext context, int index) =>
+                                    const Divider(),
+                            physics: AlwaysScrollableScrollPhysics(),
+                            controller: _scrollController,
+                            itemCount:
+                                docSnapshot.data![myNames.activities].length ??
+                                    0,
+                            itemBuilder: (BuildContext context, int index) {
+                              Map activities =
+                                  docSnapshot.data![myNames.activities];
+                              List activitiesIDs = [];
+                              activities.forEach((key, value) {
+                                activitiesIDs.add(key);
+                              });
+                              Map members = activities[activitiesIDs[index]]
+                                  [myNames.members] as Map;
+                              return Container(
+                                height: 200,
+                                width: 300,
+                                child: Card(
+                                  color: Colors.white,
+                                  elevation: 8,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      children: [
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                32, 8.0, 8.0, 4.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          activities[
+                                                                  activitiesIDs[
+                                                                      index]]
+                                                              [myNames.name],
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                              fontSize: 20),
+                                                          // strutStyle: StrutStyle(
+                                                          //     forceStrutHeight: true),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        (activities[activitiesIDs[index]]
+                                                                            [myNames.members]
+                                                                        [
+                                                                        myEmail]
+                                                                    [myNames
+                                                                        .points])
+                                                                .toString() +
+                                                            "/" +
+                                                            (activities[activitiesIDs[index]]
+                                                                            [
+                                                                            myNames
+                                                                                .reportRate] ==
+                                                                        activities[activitiesIDs[index]]
+                                                                            [
+                                                                            myNames.activityRate]
+                                                                    ? 1
+                                                                    : 7)
+                                                                .toString(),
+                                                        style: TextStyle(
+                                                            color: Color(
+                                                                0xffAACDBE),
+                                                            fontSize: 30),
+                                                      ),
+                                                      Expanded(
+                                                        child: Container(
+                                                          width: 200,
+                                                          child: Text(
+                                                            expandToListOfStrings(
+                                                                (members)),
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  color: Color(0xffF7A440),
+                                                  onPressed: () async {
+                                                    var actionInsideFullActivity =
+                                                        await Navigator.of(
+                                                                context)
+                                                            .pushNamed(
+                                                                '/fullActivity',
+                                                                arguments: activities[
+                                                                    activitiesIDs[
+                                                                        index]]);
+                                                    print(
+                                                        actionInsideFullActivity);
+                                                    if (actionInsideFullActivity !=
+                                                        null) {
+                                                      if (actionInsideFullActivity ==
+                                                          "Done") {
+                                                        checkActivityDone(
+                                                            activities[
+                                                                activitiesIDs[
+                                                                    index]],
+                                                            activitiesIDs[
+                                                                index],
+                                                            myEmail,
+                                                            firestore,
+                                                            docSnapshot);
+                                                      } else {
+                                                        //REMOVE ME FROM THE LIST OF MEMBERS OF THIS ACTIVITY IN THE ACTIVITIES TABLE
+                                                        final internetCheck =
+                                                            await firestore
+                                                                .collection(myNames
+                                                                    .usersTable)
+                                                                .doc(docSnapshot
+                                                                    .data!.id)
+                                                                .get();
+                                                        if (internetCheck
+                                                            .metadata
+                                                            .isFromCache) {
+                                                          if (this.mounted)
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                                    SnackBar(
+                                                                        content:
+                                                                            Text("A problem occurred when quitting the activity. Please check your internet connectivity")));
+                                                        } else {
+                                                          await firestore
+                                                              .collection(myNames
+                                                                  .activitiesTable)
+                                                              .doc(
+                                                                  activitiesIDs[
+                                                                      index])
+                                                              .set(
+                                                                  {
+                                                                myNames.members:
+                                                                    {
+                                                                  myEmail:
+                                                                      FieldValue
+                                                                          .delete()
+                                                                }
+                                                              },
+                                                                  SetOptions(
+                                                                      merge:
+                                                                          true));
+                                                          //REMOVE THIS ACTIVITY FROM MY ACTIVITIES IN THE USER TABLE
+                                                          activities.remove(
+                                                              activitiesIDs[
+                                                                  index]);
+                                                          await firestore
+                                                              .collection(myNames
+                                                                  .usersTable)
+                                                              .doc(docSnapshot
+                                                                  .data!.id)
+                                                              .set(
+                                                                  {
+                                                                myNames
+                                                                    .activities: {
+                                                                  activitiesIDs[
+                                                                          index]:
+                                                                      FieldValue
+                                                                          .delete()
+                                                                }
+                                                              },
+                                                                  SetOptions(
+                                                                      merge:
+                                                                          true));
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  icon: Icon(Icons
+                                                      .keyboard_arrow_right_rounded),
+                                                  iconSize: 40,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        MyRoundedLoadingButton(
+                                          action: () async {
+                                            await checkActivityDone(
+                                                activities[
+                                                    activitiesIDs[index]],
+                                                activitiesIDs[index],
+                                                myEmail,
+                                                firestore,
+                                                docSnapshot);
+                                          },
+                                          child: Text('Done'),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                 ),
               );
             }));
@@ -221,36 +338,55 @@ class _ActivityBriefState extends State<ActivityBrief> {
   Future<void> checkActivityDone(Map activity, activityID, email,
       FirebaseFirestore firestore, docSnapshot) async {
     DateTime clickedTime = DateTime.now().toUtc();
-    DateTime? lastDone =
-        (activity['lastDone']) == null ? null : (activity['lastDone']).toDate();
-    DateTime timeAdded = (activity['timeAdded']).toDate();
-    DateTime endTime = (activity['endTime']).toDate();
+    DateTime? lastDone = (activity[myNames.lastDone]) == null
+        ? null
+        : (activity[myNames.lastDone]).toDate();
+    DateTime timeAdded = (activity[myNames.timeAdded]).toDate();
+    DateTime endTime = (activity[myNames.endTime]).toDate();
     if (endTime.compareTo(clickedTime) > 0 &&
         (lastDone == null ||
-            (activity['activityRate'] == 'Daily' &&
+            (activity[myNames.activityRate] == 'Daily' &&
                 dayFromTo(timeAdded, lastDone) !=
                     dayFromTo(timeAdded, clickedTime)))) {
-      final previousPoints = activity['members'][email]['points'];
-      activity['members'][email]['points'] = previousPoints + 1;
-      activity['lastDone'] = clickedTime;
+      final previousPoints = activity[myNames.members][email][myNames.points];
+      activity[myNames.members][email][myNames.points] = previousPoints + 1;
+      activity[myNames.lastDone] = clickedTime;
       //UPDATE THE ACTIVITY.ID IN THE ACTIVITIES TABLE WITH MY POINTS
-      await firestore.collection('Activities').doc(activityID).update({
-        'members.' + email + '.points': activity['members'][email]['points']
-      });
+      final internetCheck = await firestore
+          .collection(myNames.usersTable)
+          .doc(docSnapshot.data!.id)
+          .get();
+      if (internetCheck.metadata.isFromCache) {
+        if (this.mounted)
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                  "A problem occurred when updating your points. Please check your internet connectivity")));
+        return;
+      }
+
+      await firestore.collection(myNames.activitiesTable).doc(activityID).set({
+        myNames.members: {
+          email: {
+            myNames.points: activity[myNames.members][email][myNames.points]
+          }
+        }
+      }, SetOptions(merge: true));
       //UPDATE MY ACTIVITY IN THE USERS TABLE
       await firestore
-          .collection("Users")
+          .collection(myNames.usersTable)
           .doc(docSnapshot.data!.id)
-          .update({'activities.' + activityID: activity});
+          .set({
+        myNames.activities: {activityID: activity}
+      }, SetOptions(merge: true));
     } else {
       if (endTime.compareTo(clickedTime) <= 0) {
-         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Activity has ended! Check its report in the reports section.")));
-      
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                "Activity has ended! Check its report in the reports section.")));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("Activity already checked for this " +
-                (activity['activityRate'] == 'Daily' ? "Day" : "Week"))));
+                (activity[myNames.activityRate] == 'Daily' ? "Day" : "Week"))));
       }
     }
   }
@@ -259,7 +395,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
     String result = "";
     int count = 0;
     map.forEach((key, value) {
-      result += map[key]['name'];
+      result += map[key][myNames.name];
       if (count < map.length - 1) {
         result += ", ";
       }

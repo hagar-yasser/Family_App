@@ -1,5 +1,6 @@
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
+import 'package:family_app/myNames.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:family_app/objects/Activity.dart';
@@ -18,7 +19,7 @@ class FullActivity extends StatelessWidget {
     final activity = ModalRoute.of(context)!.settings.arguments as Map;
     final ScrollController _controllerOne = ScrollController();
     User? user = Provider.of<Auth>(context).getCurrentUser();
-    String myEmail = user!.email!.replaceAll('.', '_');
+    String myEmail = user!.email!;
     return Scaffold(
       //backgroundColor: Colors.white,
       body: Scrollbar(
@@ -31,56 +32,71 @@ class FullActivity extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
-                        child: IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: Icon(
-                              Icons.keyboard_arrow_left_rounded,
-                              color: Color(0xffF7A440),
-                              size: 50,
-                            )),
-                      ),
-                      SizedBox(
-                        width: 270,
-                        height: 80,
+                      Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Scrollbar(
-                            interactive: true,
-                            showTrackOnHover: true,
-                            controller: _controllerOne,
-                            child: ListView(
-                              controller: _controllerOne,
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                Text(activity['name'],
-                                    style: TextStyle(fontSize: 35))
-                              ],
-                            ),
-                          ),
+                          padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
+                          child: IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: Icon(
+                                Icons.keyboard_arrow_left_rounded,
+                                color: Color(0xffF7A440),
+                                size: 50,
+                              )),
+                        ),
+                      ),
+                      Spacer(),
+                      Expanded(
+                        flex: 5,
+                        child: Text(
+                          activity[myNames.name],
+                          style: TextStyle(fontSize: 35),
+                          // overflow: TextOverflow.ellipsis,
                         ),
                       )
+                      // SizedBox(
+                      //   width: MediaQuery.of(context).size.width * 0.8,
+                      //   height: 80,
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.all(8.0),
+                      //     child: Scrollbar(
+                      //       interactive: true,
+                      //       showTrackOnHover: true,
+                      //       controller: _controllerOne,
+                      //       child: ListView(
+                      //         controller: _controllerOne,
+                      //         scrollDirection: Axis.horizontal,
+                      //         children: [
+                      // Text(activity[myNames.name],
+                      //     style: TextStyle(fontSize: 35))
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // )
                     ],
                   ),
                   Text(
-                      (activity["members"][myEmail]['points']).toString() +
+                      (activity[myNames.members][myEmail][myNames.points])
+                              .toString() +
                           '/' +
-                          (activity['reportRate'] == activity['activityRate']
+                          (activity[myNames.reportRate] ==
+                                      activity[myNames.activityRate]
                                   ? 1
                                   : 7)
                               .toString(),
                       style: TextStyle(color: Color(0xffAACDBE), fontSize: 30)),
-                  Text("End Time: "+displayTime(activity['endTime'].toDate()),
+                  Text(
+                      "End Time: " +
+                          displayTime(activity[myNames.endTime].toDate()),
                       style: TextStyle(color: Color(0xffAACDBE), fontSize: 20)),
                   Text('Members', style: TextStyle(fontSize: 30)),
                   Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: ListOfMembers(activity['members']),
+                    child: ListOfMembers(activity[myNames.members]),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -91,7 +107,7 @@ class FullActivity extends StatelessWidget {
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20)),
                         TextSpan(
-                            text: activity['activityRate'],
+                            text: activity[myNames.activityRate],
                             style: TextStyle(
                               fontSize: 20,
                             ))
@@ -107,7 +123,7 @@ class FullActivity extends StatelessWidget {
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20)),
                         TextSpan(
-                            text: activity['reportRate'],
+                            text: activity[myNames.reportRate],
                             style: TextStyle(fontSize: 20))
                       ]),
                     ),
@@ -149,7 +165,7 @@ class FullActivity extends StatelessWidget {
 
   String displayTime(DateTime time) {
     String res = "";
-    res +="${time.year}-${time.month}-${time.day} ${time.hour}:${time.minute}";
+    res += "${time.year}-${time.month}-${time.day} ${time.hour}:${time.minute}";
     return res;
   }
 }
@@ -165,9 +181,11 @@ class ListOfMembers extends StatelessWidget {
     members.forEach((key, value) {
       membersList.add(key);
     });
-    return Container(
-      height: 200,
-      width: 200,
+    return ConstrainedBox(
+      // height: 200,
+      // width: 200,
+      constraints: BoxConstraints(
+          minWidth: 200, maxWidth: 200, minHeight: 0, maxHeight: 200),
       child: Card(
         color: Colors.white,
         elevation: 8,
@@ -177,12 +195,13 @@ class ListOfMembers extends StatelessWidget {
           showTrackOnHover: true,
           controller: _controllerTwo,
           child: ListView.separated(
+            shrinkWrap: true,
             itemCount: membersList.length,
             controller: _controllerTwo,
             itemBuilder: (BuildContext context, int index) {
               return ListTile(
                 title: Text(
-                  members[membersList[index]]['name'],
+                  members[membersList[index]][myNames.name],
                   style: TextStyle(fontSize: 20),
                 ),
               );
