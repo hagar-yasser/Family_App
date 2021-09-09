@@ -58,7 +58,7 @@ class _AddMembersState extends State<AddMembers> {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
     final Map family = widget.snapshot.data!.docs[0][myNames.family];
-    final List familyEmailsList = [];
+    List familyEmailsList = [];
     family.forEach((key, value) {
       familyEmailsList.add(key);
     });
@@ -120,7 +120,15 @@ class _AddMembersState extends State<AddMembers> {
                     width: MediaQuery.of(context).size.width * 0.8,
                     child: (widget.snapshot.data == null ||
                             familyEmailsList.length == 0)
-                        ? Center()
+                        ? Center(
+                            child: Card(
+                              elevation: 8,
+                              child: Text(
+                                "There are no family members. Try to send family requests to your family members from your profile page.",
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ),
+                          )
                         : Scrollbar(
                             interactive: true,
                             showTrackOnHover: true,

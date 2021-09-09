@@ -17,7 +17,8 @@ class SignInType extends StatefulWidget {
   _SignInTypeState createState() => _SignInTypeState();
 }
 
-class _SignInTypeState extends State<SignInType> {
+class _SignInTypeState extends State<SignInType>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late String _email;
   late String _password;
@@ -27,8 +28,10 @@ class _SignInTypeState extends State<SignInType> {
   TextEditingController _nameController = TextEditingController();
 
   late List<TextEditingController> allControllers;
+  late TabController _tabController;
   @override
   void dispose() {
+    _tabController.dispose();
     allControllers.map((e) => e.dispose());
     super.dispose();
   }
@@ -36,9 +39,9 @@ class _SignInTypeState extends State<SignInType> {
   MyUser? currentUser;
   @override
   void initState() {
-    // TODO: implement initState
-    allControllers = [_emailController, _passwordController, _nameController];
     super.initState();
+    _tabController = TabController(vsync: this, length: 2);
+    allControllers = [_emailController, _passwordController, _nameController];
   }
 
   @override
@@ -54,49 +57,165 @@ class _SignInTypeState extends State<SignInType> {
         elevation: 8,
         child: Column(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Spacer(
-                  flex: 2,
-                ),
-                MyButton(
-                  action: () {
-                    setState(() {
-                      _signUp = true;
-                    });
-                  },
-                  text: 'Sign Up',
-                ),
-                Spacer(
-                  flex: 1,
-                ),
-                MyButton(
-                  action: () {
-                    setState(() {
-                      _signUp = false;
-                    });
-                  },
-                  text: 'Log In',
-                ),
-                Spacer(
-                  flex: 2,
-                ),
-              ],
-            ),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return SlideTransition(
-                    child: child, position: animation.drive(tween));
-              },
-              child: _signUp
-                  ? SignUp(controllers: allControllers)
-                  : LogIn(
-                      controllers: [allControllers[0], allControllers[1]],
+            // DefaultTabController(
+            //     length: 2,
+            //     child: Scaffold(
+            //       appBar: AppBar(
+            //         backgroundColor: Colors.white,
+            //         flexibleSpace: SafeArea(
+            //           child: Padding(
+            //             padding: const EdgeInsets.all(8.0),
+            //             child: TabBar(
+            // onTap: (int index) {
+            //   if (index == 0) {
+            //     _signUp = true;
+            //   } else {
+            //     _signUp = false;
+            //   }
+            // },
+            // indicator: BoxDecoration(
+            //     borderRadius:
+            //         BorderRadius.circular(50), // Creates border
+            //     color: Color(0xffEA907A)),
+            // tabs: [
+            //   Tab(
+            //     child: Text(
+            //       "Sign Up",
+            //       style: TextStyle(
+            //           fontFeatures: Theme.of(context)
+            //               .textTheme
+            //               .bodyText1!
+            //               .fontFeatures,
+            //           fontSize: 15,
+            //           color: Theme.of(context)
+            //               .textTheme
+            //               .bodyText1!
+            //               .color),
+            //     ),
+            //   ),
+            //   Tab(
+            //     child: Text("Log In",
+            //         style: TextStyle(
+            //             fontFeatures: Theme.of(context)
+            //                 .textTheme
+            //                 .bodyText1!
+            //                 .fontFeatures,
+            //             fontSize: 15,
+            //             color: Theme.of(context)
+            //                 .textTheme
+            //                 .bodyText1!
+            //                 .color)),
+            //   )
+            // ],
+            //             ),
+            //           ),
+            //         ),
+            //       ),
+            //       body: TabBarView(
+            //         children: [
+            //           SignUp(controllers: allControllers),
+            //           LogIn(
+            //             controllers: [allControllers[0], allControllers[1]],
+            //           ),
+            //         ],
+            //       ),
+            //     )),
+            // Row(
+            //   crossAxisAlignment: CrossAxisAlignment.start,
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     Spacer(
+            //       flex: 2,
+            //     ),
+            //     MyButton(
+            //       action: () {
+            //         setState(() {
+            //           _signUp = true;
+            //         });
+            //       },
+            //       text: 'Sign Up',
+            //     ),
+            //     Spacer(
+            //       flex: 1,
+            //     ),
+            //     MyButton(
+            //       action: () {
+            //         setState(() {
+            //           _signUp = false;
+            //         });
+            //       },
+            //       text: 'Log In',
+            //     ),
+            //     Spacer(
+            //       flex: 2,
+            //     ),
+            //   ],
+            // ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TabBar(
+                onTap: (int index) {
+                  if (index == 0) {
+                    _signUp = true;
+                  } else {
+                    _signUp = false;
+                  }
+                },
+                indicator: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50), // Creates border
+                    color: Color(0xffEA907A)),
+                controller: _tabController,
+                tabs: [
+                  Tab(
+                    child: Text(
+                      "Sign Up",
+                      style: TextStyle(
+                          fontFeatures: Theme.of(context)
+                              .textTheme
+                              .bodyText1!
+                              .fontFeatures,
+                          fontSize: 15,
+                          color: Theme.of(context).textTheme.bodyText1!.color),
                     ),
+                  ),
+                  Tab(
+                    child: Text("Log In",
+                        style: TextStyle(
+                            fontFeatures: Theme.of(context)
+                                .textTheme
+                                .bodyText1!
+                                .fontFeatures,
+                            fontSize: 15,
+                            color:
+                                Theme.of(context).textTheme.bodyText1!.color)),
+                  )
+                ],
+              ),
             ),
+            Container(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  SignUp(controllers: allControllers),
+                  LogIn(
+                    controllers: [allControllers[0], allControllers[1]],
+                  ),
+                ],
+              ),
+            ),
+            // AnimatedSwitcher(
+            //   duration: const Duration(milliseconds: 500),
+            //   transitionBuilder: (Widget child, Animation<double> animation) {
+            //     return SlideTransition(
+            //         child: child, position: animation.drive(tween));
+            //   },
+            //   child: _signUp
+            //       ? SignUp(controllers: allControllers)
+            // : LogIn(
+            //     controllers: [allControllers[0], allControllers[1]],
+            //   ),
+            // ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 0, 8.0),
               child: MyRoundedLoadingButton(
@@ -297,8 +416,10 @@ class MyTextFormField extends StatefulWidget {
       required this.text,
       required this.obscureText,
       required this.controller,
-      int? constraint,List<TextInputFormatter>? inputFormatters})
-      : this.constraint = constraint,this.inputFormatters=inputFormatters,
+      int? constraint,
+      List<TextInputFormatter>? inputFormatters})
+      : this.constraint = constraint,
+        this.inputFormatters = inputFormatters,
         super(key: key);
 
   @override
@@ -307,6 +428,7 @@ class MyTextFormField extends StatefulWidget {
 
 class _MyTextFormFieldState extends State<MyTextFormField> {
   late TextEditingController _controller;
+  bool _showPassword = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -322,10 +444,22 @@ class _MyTextFormFieldState extends State<MyTextFormField> {
         inputFormatters: widget.inputFormatters,
         maxLength: widget.constraint,
         maxLengthEnforcement: MaxLengthEnforcement.enforced,
-        obscureText: widget.obscureText,
+        obscureText: (widget.obscureText && !_showPassword),
         controller: _controller,
         decoration: InputDecoration(
-            border: OutlineInputBorder(), labelText: widget.text),
+            border: OutlineInputBorder(),
+            labelText: widget.text,
+            suffixIcon: (widget.obscureText)
+                ? IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _showPassword = !_showPassword;
+                      });
+                    },
+                    icon: Icon(_showPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off))
+                : null),
         validator: (value) {
           if (value == null || value.isEmpty) {
             return "Please enter some text";

@@ -181,9 +181,11 @@ class ListOfMembers extends StatelessWidget {
     members.forEach((key, value) {
       membersList.add(key);
     });
-    return Container(
-      height: 200,
-      width: 200,
+    return ConstrainedBox(
+      // height: 200,
+      // width: 200,
+      constraints: BoxConstraints(
+          minWidth: 200, maxWidth: 200, minHeight: 0, maxHeight: 200),
       child: Card(
         color: Colors.white,
         elevation: 8,
@@ -193,6 +195,7 @@ class ListOfMembers extends StatelessWidget {
           showTrackOnHover: true,
           controller: _controllerTwo,
           child: ListView.separated(
+            shrinkWrap: true,
             itemCount: membersList.length,
             controller: _controllerTwo,
             itemBuilder: (BuildContext context, int index) {

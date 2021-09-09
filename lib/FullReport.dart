@@ -25,109 +25,106 @@ class FullReport extends StatelessWidget {
       body: Scrollbar(
         interactive: true,
         showTrackOnHover: true,
-        child: ListView(
-          children: [
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+        child: Center(
+            child: ListView(children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
-                          child: IconButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              icon: Icon(
-                                Icons.keyboard_arrow_left_rounded,
-                                color: Color(0xffF7A440),
-                                size: 50,
-                              )),
-                        ),
-                      ),
-                      Spacer(),
-                      Expanded(
-                        flex: 5,
-                        child: Text(
-                          activity[myNames.name],
-                          style: TextStyle(fontSize: 35),
-                          // overflow: TextOverflow.ellipsis,
-                        ),
-                      )
-                      // SizedBox(
-                      //   width: 270,
-                      //   height: 80,
-                      //   child: Padding(
-                      //     padding: const EdgeInsets.all(8.0),
-                      //     child: Scrollbar(
-                      //       interactive: true,
-                      //       showTrackOnHover: true,
-                      //       controller: _controllerOne,
-                      //       child: ListView(
-                      //         controller: _controllerOne,
-                      //         scrollDirection: Axis.horizontal,
-                      //         children: [
-                      //           Text(activity[myNames.name],
-                      //               style: TextStyle(fontSize: 35))
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ),
-                      // )
-                    ],
-                  ),
-                  Text(
-                      "End Time: " +
-                          displayTime(activity[myNames.endTime].toDate()),
-                      style: TextStyle(color: Color(0xffAACDBE), fontSize: 20)),
-                  Text('Members', style: TextStyle(fontSize: 30)),
-                  Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: ListOfMembersReport(
-                        activity[myNames.members],
-                        (activity[myNames.reportRate] ==
-                                activity[myNames.activityRate]
-                            ? 1
-                            : 7)),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text.rich(
-                      TextSpan(children: [
-                        TextSpan(
-                            text: 'Activity Rate: ',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20)),
-                        TextSpan(
-                            text: activity[myNames.activityRate],
-                            style: TextStyle(
-                              fontSize: 20,
-                            ))
-                      ]),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
+                      child: IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(
+                            Icons.keyboard_arrow_left_rounded,
+                            color: Color(0xffF7A440),
+                            size: 50,
+                          )),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text.rich(
-                      TextSpan(children: [
-                        TextSpan(
-                            text: 'Report Rate: ',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20)),
-                        TextSpan(
-                            text: activity[myNames.reportRate],
-                            style: TextStyle(fontSize: 20))
-                      ]),
+                  Spacer(),
+                  Expanded(
+                    flex: 5,
+                    child: Text(
+                      activity[myNames.name],
+                      style: TextStyle(fontSize: 35),
+                      // overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+                  )
+                  // SizedBox(
+                  //   width: 270,
+                  //   height: 80,
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.all(8.0),
+                  //     child: Scrollbar(
+                  //       interactive: true,
+                  //       showTrackOnHover: true,
+                  //       controller: _controllerOne,
+                  //       child: ListView(
+                  //         controller: _controllerOne,
+                  //         scrollDirection: Axis.horizontal,
+                  //         children: [
+                  //           Text(activity[myNames.name],
+                  //               style: TextStyle(fontSize: 35))
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // )
                 ],
               ),
-            )
-          ],
-        ),
+              Text(
+                  "End Time: " +
+                      displayTime(activity[myNames.endTime].toDate()),
+                  style: TextStyle(color: Color(0xffAACDBE), fontSize: 20)),
+              Text('Members', style: TextStyle(fontSize: 30)),
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: ListOfMembersReport(
+                    activity[myNames.members],
+                    (activity[myNames.reportRate] ==
+                            activity[myNames.activityRate]
+                        ? 1
+                        : 7)),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text.rich(
+                  TextSpan(children: [
+                    TextSpan(
+                        text: 'Activity Rate: ',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20)),
+                    TextSpan(
+                        text: activity[myNames.activityRate],
+                        style: TextStyle(
+                          fontSize: 20,
+                        ))
+                  ]),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text.rich(
+                  TextSpan(children: [
+                    TextSpan(
+                        text: 'Report Rate: ',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20)),
+                    TextSpan(
+                        text: activity[myNames.reportRate],
+                        style: TextStyle(fontSize: 20))
+                  ]),
+                ),
+              ),
+            ],
+          ),
+        ])),
       ),
     );
   }
@@ -151,9 +148,9 @@ class ListOfMembersReport extends StatelessWidget {
     members.forEach((key, value) {
       membersList.add(key);
     });
-    return Container(
-      height: 200,
-      width: 200,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+          minWidth: 200, maxWidth: 200, minHeight: 0, maxHeight: 200),
       child: Card(
         color: Colors.white,
         elevation: 8,
@@ -163,6 +160,7 @@ class ListOfMembersReport extends StatelessWidget {
           showTrackOnHover: true,
           controller: _controllerTwo,
           child: ListView.separated(
+            shrinkWrap: true,
             itemCount: membersList.length,
             controller: _controllerTwo,
             itemBuilder: (BuildContext context, int index) {

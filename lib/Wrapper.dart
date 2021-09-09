@@ -11,9 +11,66 @@ import 'package:provider/provider.dart';
 
 import 'authorization/Auth.dart';
 
-class Wrapper extends StatelessWidget {
+class Wrapper extends StatefulWidget {
   static const routeName = '/wrapper';
   const Wrapper({Key? key}) : super(key: key);
+
+  @override
+  _WrapperState createState() => _WrapperState();
+}
+
+class _WrapperState extends State<Wrapper> {
+  late final myUserAuthStream;
+  @override
+  void initState() {
+    super.initState();
+    final authProvider = Provider.of<Auth>(context, listen: false);
+    myUserAuthStream = authProvider.user;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authProvider = Provider.of<Auth>(context);
+    authProvider.printCurrentUserEmail();
+    // authProvider.reloadUserData();
+    // authProvider.printCurrentUserEmail();
+    return StreamBuilder<MyUser?>(
+        stream: myUserAuthStream,
+        builder: (_, AsyncSnapshot<MyUser?> snapshot) {
+          if (snapshot.connectionState == ConnectionState.active) {
+            final MyUser? user = snapshot.data;
+            if (user != null && authProvider.getCurrentUser()!.emailVerified) {
+              print(user.email);
+              return UserAuthToUserDB();
+            } else {
+              return FullSignIn();
+            }
+          }
+          print('circular from wrapper');
+          return Scaffold(
+              body: Center(
+            child: CircularProgressIndicator(),
+          ));
+        });
+  }
+}
+
+class UserAuthToUserDB extends StatefulWidget {
+  const UserAuthToUserDB({Key? key}) : super(key: key);
+
+  @override
+  _UserAuthToUserDBState createState() => _UserAuthToUserDBState();
+}
+
+class _UserAuthToUserDBState extends State<UserAuthToUserDB> {
+  late final Future<void> checkIfAlreadyUserDB;
+  @override
+  void initState() {
+    super.initState();
+    final authProvider = Provider.of<Auth>(context, listen: false);
+    checkIfAlreadyUserDB = checkIfUserAddedToDB(authProvider);
+  }
+
   Future<void> checkIfUserAddedToDB(Auth authProvider) async {
     await authProvider.reloadUserData();
     authProvider.printCurrentUserEmail();
@@ -39,47 +96,27 @@ class Wrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<Auth>(context);
-    authProvider.printCurrentUserEmail();
-    // authProvider.reloadUserData();
-    // authProvider.printCurrentUserEmail();
-    return StreamBuilder<MyUser?>(
-        stream: authProvider.user,
-        builder: (_, AsyncSnapshot<MyUser?> snapshot) {
-          if (snapshot.connectionState == ConnectionState.active) {
-            final MyUser? user = snapshot.data;
-            if (user != null && authProvider.getCurrentUser()!.emailVerified) {
-              print(user.email);
-              return FutureBuilder(
-                future: checkIfUserAddedToDB(authProvider),
-                builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-                  if (snapshot.hasError) {
-                    return Container(
-                      color: Colors.white,
-                      child: Center(
-                        child: Text('an error occured'),
-                      ),
-                    );
-                  }
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Container(
-                      color: Colors.white,
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-                  return MyScaffoldWrapper();
-                },
-              );
-            } else {
-              return FullSignIn();
-            }
-          }
-          return Scaffold(
-              body: Center(
-            child: CircularProgressIndicator(),
-          ));
-        });
+    return FutureBuilder(
+      future: checkIfAlreadyUserDB,
+      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+        if (snapshot.hasError) {
+          return Container(
+            color: Colors.white,
+            child: Center(
+              child: Text('an error occured'),
+            ),
+          );
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            color: Colors.white,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        return MyScaffoldWrapper();
+      },
+    );
   }
 }

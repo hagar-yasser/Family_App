@@ -136,9 +136,14 @@ class _AddActivityState extends State<AddActivity> {
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(0, 0, 0, 20.0),
-                      child: Container(
-                        height: 200,
-                        width: 200,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                            minWidth: 300,
+                            maxWidth: 300,
+                            minHeight: 0,
+                            maxHeight: 200),
+                        // height: 200,
+                        // width: 300,
                         child: Card(
                           color: Colors.white,
                           elevation: 8,
@@ -146,6 +151,7 @@ class _AddActivityState extends State<AddActivity> {
                             interactive: true,
                             showTrackOnHover: true,
                             child: ListView.separated(
+                              shrinkWrap: true,
                               itemCount: _members.length,
                               itemBuilder: (BuildContext context, int index) {
                                 final List membersEmailsList = [];

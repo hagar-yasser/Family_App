@@ -96,114 +96,133 @@ class _ReportsBriefState extends State<ReportsBrief> {
             });
           }
           print(reportsIDs.length);
+
           return Center(
             child: RefreshIndicator(
               onRefresh: () async {
                 setState(() {});
               },
-              child: Scrollbar(
-                controller: _scrollController,
-                isAlwaysShown: true,
-                interactive: true,
-                showTrackOnHover: true,
-                child: ListView.separated(
-                  physics: AlwaysScrollableScrollPhysics(),
-                  controller: _scrollController,
-                  separatorBuilder: (BuildContext context, int index) =>
-                      const Divider(),
-                  itemCount: reportsIDs.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Container(
-                      height: 200,
-                      width: 300,
+              child: (reportsIDs.length == 0)
+                  ? Center(
                       child: Card(
-                        color: Colors.white,
                         elevation: 8,
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      32, 8.0, 8.0, 4.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                        child: Column(
+                          child: Text(
+                            "There are no reports to show yet. Add an activity from the home page and when it finishes its report will appear here",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Scrollbar(
+                      controller: _scrollController,
+                      isAlwaysShown: true,
+                      interactive: true,
+                      showTrackOnHover: true,
+                      child: ListView.separated(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        controller: _scrollController,
+                        separatorBuilder: (BuildContext context, int index) =>
+                            const Divider(),
+                        itemCount: reportsIDs.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Container(
+                            height: 200,
+                            width: 300,
+                            child: Card(
+                              color: Colors.white,
+                              elevation: 8,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            32, 8.0, 8.0, 4.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           crossAxisAlignment:
                                               CrossAxisAlignment.center,
                                           children: [
                                             Expanded(
-                                              child: Text(
-                                                  reports![reportsIDs[index]]
-                                                      [myNames.name],
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style:
-                                                      TextStyle(fontSize: 20)),
-                                            ),
-                                            Text(
-                                                (reports[reportsIDs[index]]
-                                                                    [myNames.members]
-                                                                [myEmail]
-                                                            [myNames.points])
-                                                        .toString() +
-                                                    "/" +
-                                                    (reports[reportsIDs[index]][myNames
-                                                                    .reportRate] ==
-                                                                reports[reportsIDs[index]]
-                                                                    [myNames
-                                                                        .activityRate]
-                                                            ? 1
-                                                            : 7)
-                                                        .toString(),
-                                                style: TextStyle(
-                                                    color: Color(0xffAACDBE),
-                                                    fontSize: 30)),
-                                            Expanded(
-                                              child: Container(
-                                                width: 200,
-                                                child: Text(
-                                                  expandToListOfStrings(
-                                                      (reports[
-                                                              reportsIDs[index]]
-                                                          [myNames.members])),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                        reports![reportsIDs[
+                                                                index]]
+                                                            [myNames.name],
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                            fontSize: 20)),
+                                                  ),
+                                                  Text(
+                                                      (reports[reportsIDs[index]]
+                                                                          [myNames.members]
+                                                                      [myEmail][
+                                                                  myNames
+                                                                      .points])
+                                                              .toString() +
+                                                          "/" +
+                                                          (reports[reportsIDs[index]][myNames.reportRate] ==
+                                                                      reports[reportsIDs[index]]
+                                                                          [
+                                                                          myNames
+                                                                              .activityRate]
+                                                                  ? 1
+                                                                  : 7)
+                                                              .toString(),
+                                                      style: TextStyle(
+                                                          color:
+                                                              Color(0xffAACDBE),
+                                                          fontSize: 30)),
+                                                  Expanded(
+                                                    child: Container(
+                                                      width: 200,
+                                                      child: Text(
+                                                        expandToListOfStrings(
+                                                            (reports[reportsIDs[
+                                                                    index]][
+                                                                myNames
+                                                                    .members])),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
+                                            IconButton(
+                                              color: Color(0xffF7A440),
+                                              onPressed: () async {
+                                                Navigator.of(context).pushNamed(
+                                                    '/fullReport',
+                                                    arguments: reports[
+                                                        reportsIDs[index]]);
+                                              },
+                                              icon: Icon(Icons
+                                                  .keyboard_arrow_right_rounded),
+                                              iconSize: 40,
+                                            )
                                           ],
                                         ),
                                       ),
-                                      IconButton(
-                                        color: Color(0xffF7A440),
-                                        onPressed: () async {
-                                          Navigator.of(context).pushNamed(
-                                              '/fullReport',
-                                              arguments:
-                                                  reports[reportsIDs[index]]);
-                                        },
-                                        icon: Icon(
-                                            Icons.keyboard_arrow_right_rounded),
-                                        iconSize: 40,
-                                      )
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-              ),
+                    ),
             ),
           );
         },

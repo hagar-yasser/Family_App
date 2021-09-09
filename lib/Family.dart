@@ -191,29 +191,42 @@ class FamilyMembers extends StatelessWidget {
     return Container(
       // height: 400,
       // width: 300,
-      child: Scrollbar(
-        interactive: true,
-        isAlwaysShown: true,
-        showTrackOnHover: true,
-        controller: _controller,
-        child: ListView.separated(
-          itemCount: familyIDs.length,
-          controller: _controller,
-          itemBuilder: (BuildContext context, int index) {
-            return Card(
-              elevation: 8,
-              child: ListTile(
-                title: Text(
-                  family[familyIDs[index]][myNames.name],
-                  style: TextStyle(fontSize: 20),
+      child: (familyIDs.length == 0)
+          ? Center(
+              child: Card(
+                elevation: 8,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "There are no family members. Try to send family requests to your family members from your profile page.",
+                    style: TextStyle(fontSize: 20),
+                  ),
                 ),
               ),
-            );
-          },
-          separatorBuilder: (BuildContext context, int index) =>
-              const Divider(),
-        ),
-      ),
+            )
+          : Scrollbar(
+              interactive: true,
+              isAlwaysShown: true,
+              showTrackOnHover: true,
+              controller: _controller,
+              child: ListView.separated(
+                itemCount: familyIDs.length,
+                controller: _controller,
+                itemBuilder: (BuildContext context, int index) {
+                  return Card(
+                    elevation: 8,
+                    child: ListTile(
+                      title: Text(
+                        family[familyIDs[index]][myNames.name],
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ),
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) =>
+                    const Divider(),
+              ),
+            ),
     );
   }
 }
@@ -237,115 +250,128 @@ class FamilyRequests extends StatelessWidget {
     return Container(
       // height: 400,
       // width: 400,
-      child: Scrollbar(
-        interactive: true,
-        isAlwaysShown: true,
-        showTrackOnHover: true,
-        controller: _controller,
-        child: ListView.separated(
-          itemCount: familyRequestsIDs.length,
-          controller: _controller,
-          itemBuilder: (BuildContext context, int index) {
-            return Card(
-              elevation: 8,
-              child: Column(children: [
-                Text(
-                  familyRequestsIDs[index],
+      child: (familyRequestsIDs.length == 0)
+          ? Center(
+              child: Card(
+                elevation: 8,
+                child: Text(
+                  "There are no family requests",
                   style: TextStyle(fontSize: 20),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: IconButton(
-                          color: Colors.redAccent,
-                          onPressed: () async {
-                            QuerySnapshot myUser = await firestore
-                                .collection(myNames.usersTable)
-                                .where(myNames.email, isEqualTo: myEmail)
-                                .get();
-                            QuerySnapshot requestedUser = await firestore
-                                .collection(myNames.usersTable)
-                                .where(myNames.email,
-                                    isEqualTo: familyRequestsIDs[index])
-                                .get();
-                            await firestore
-                                .collection(myNames.usersTable)
-                                .doc(myUser.docs[0].id)
-                                .set({
-                              myNames.familyRequests: {
-                                myEmail: {
-                                  familyRequestsIDs[index]: FieldValue.delete()
-                                }
-                              }
-                            }, SetOptions(merge: true));
-                            await firestore
-                                .collection(myNames.usersTable)
-                                .doc(requestedUser.docs[0].id)
-                                .set({
-                              myNames.familyRequests: {
-                                myEmail: FieldValue.delete()
-                              }
-                            }, SetOptions(merge: true));
-                          },
-                          icon: Icon(Icons.cancel_outlined)),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: IconButton(
-                          color: Color(0xffEA907A),
-                          onPressed: () async {
-                            QuerySnapshot myUser = await firestore
-                                .collection(myNames.usersTable)
-                                .where(myNames.email, isEqualTo: myEmail)
-                                .get();
-                            QuerySnapshot requestedUser = await firestore
-                                .collection(myNames.usersTable)
-                                .where(myNames.email,
-                                    isEqualTo: familyRequestsIDs[index])
-                                .get();
-                            await firestore
-                                .collection(myNames.usersTable)
-                                .doc(myUser.docs[0].id)
-                                .set({
-                              myNames.familyRequests: {
-                                myEmail: {
-                                  familyRequestsIDs[index]: FieldValue.delete()
-                                }
-                              },
-                              myNames.family: {
-                                familyRequestsIDs[index]: {
-                                  myNames.name: requestedUser.docs[0]
-                                      [myNames.name]
-                                }
-                              }
-                            }, SetOptions(merge: true));
-                            await firestore
-                                .collection(myNames.usersTable)
-                                .doc(requestedUser.docs[0].id)
-                                .set({
-                              myNames.familyRequests: {
-                                myEmail: FieldValue.delete()
-                              },
-                              myNames.family: {
-                                myEmail: {
-                                  myNames.name: myUser.docs[0][myNames.name]
-                                }
-                              }
-                            }, SetOptions(merge: true));
-                          },
-                          icon: Icon(Icons.check_circle_outline_rounded)),
-                    ),
-                  ],
-                ),
-              ]),
-            );
-          },
-          separatorBuilder: (BuildContext context, int index) =>
-              const Divider(),
-        ),
-      ),
+              ),
+            )
+          : Scrollbar(
+              interactive: true,
+              isAlwaysShown: true,
+              showTrackOnHover: true,
+              controller: _controller,
+              child: ListView.separated(
+                itemCount: familyRequestsIDs.length,
+                controller: _controller,
+                itemBuilder: (BuildContext context, int index) {
+                  return Card(
+                    elevation: 8,
+                    child: Column(children: [
+                      Text(
+                        familyRequestsIDs[index],
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: IconButton(
+                                color: Colors.redAccent,
+                                onPressed: () async {
+                                  QuerySnapshot myUser = await firestore
+                                      .collection(myNames.usersTable)
+                                      .where(myNames.email, isEqualTo: myEmail)
+                                      .get();
+                                  QuerySnapshot requestedUser = await firestore
+                                      .collection(myNames.usersTable)
+                                      .where(myNames.email,
+                                          isEqualTo: familyRequestsIDs[index])
+                                      .get();
+                                  await firestore
+                                      .collection(myNames.usersTable)
+                                      .doc(myUser.docs[0].id)
+                                      .set({
+                                    myNames.familyRequests: {
+                                      myEmail: {
+                                        familyRequestsIDs[index]:
+                                            FieldValue.delete()
+                                      }
+                                    }
+                                  }, SetOptions(merge: true));
+                                  await firestore
+                                      .collection(myNames.usersTable)
+                                      .doc(requestedUser.docs[0].id)
+                                      .set({
+                                    myNames.familyRequests: {
+                                      myEmail: FieldValue.delete()
+                                    }
+                                  }, SetOptions(merge: true));
+                                },
+                                icon: Icon(Icons.cancel_outlined)),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: IconButton(
+                                color: Color(0xffEA907A),
+                                onPressed: () async {
+                                  QuerySnapshot myUser = await firestore
+                                      .collection(myNames.usersTable)
+                                      .where(myNames.email, isEqualTo: myEmail)
+                                      .get();
+                                  QuerySnapshot requestedUser = await firestore
+                                      .collection(myNames.usersTable)
+                                      .where(myNames.email,
+                                          isEqualTo: familyRequestsIDs[index])
+                                      .get();
+                                  await firestore
+                                      .collection(myNames.usersTable)
+                                      .doc(myUser.docs[0].id)
+                                      .set({
+                                    myNames.familyRequests: {
+                                      myEmail: {
+                                        familyRequestsIDs[index]:
+                                            FieldValue.delete()
+                                      }
+                                    },
+                                    myNames.family: {
+                                      familyRequestsIDs[index]: {
+                                        myNames.name: requestedUser.docs[0]
+                                            [myNames.name]
+                                      }
+                                    }
+                                  }, SetOptions(merge: true));
+                                  await firestore
+                                      .collection(myNames.usersTable)
+                                      .doc(requestedUser.docs[0].id)
+                                      .set({
+                                    myNames.familyRequests: {
+                                      myEmail: FieldValue.delete()
+                                    },
+                                    myNames.family: {
+                                      myEmail: {
+                                        myNames.name: myUser.docs[0]
+                                            [myNames.name]
+                                      }
+                                    }
+                                  }, SetOptions(merge: true));
+                                },
+                                icon: Icon(Icons.check_circle_outline_rounded)),
+                          ),
+                        ],
+                      ),
+                    ]),
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) =>
+                    const Divider(),
+              ),
+            ),
     );
   }
 }

@@ -11,19 +11,33 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class MyScaffoldWrapper extends StatelessWidget {
+class MyScaffoldWrapper extends StatefulWidget {
   const MyScaffoldWrapper({Key? key}) : super(key: key);
 
   @override
+  _MyScaffoldWrapperState createState() => _MyScaffoldWrapperState();
+}
+
+class _MyScaffoldWrapperState extends State<MyScaffoldWrapper> {
+  late final myUser;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  @override
+  void initState() {
+    super.initState();
+    User? user = Provider.of<Auth>(context, listen: false).getCurrentUser();
+    String myEmail = user!.email!;
+    myUser = firestore
+        .collection(myNames.usersTable)
+        .where(myNames.email, isEqualTo: myEmail)
+        .get();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
     String myEmail = user!.email!;
     return FutureBuilder(
-        future: firestore
-            .collection(myNames.usersTable)
-            .where(myNames.email, isEqualTo: myEmail)
-            .get(),
+        future: myUser,
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
             return Container(
@@ -58,14 +72,30 @@ class MyScaffold extends StatefulWidget {
 }
 
 class _MyScaffoldState extends State<MyScaffold> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+  final List<Widget> screens = [
+    ActivityBrief(),
+    ReportsBrief(),
+    Family(),
+    Profile()
+  ];
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = 0;
+    print('hey there');
+  }
+
   @override
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
     String myEmail = user!.email!;
     return Scaffold(
-      body: currentPage(_selectedIndex),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
