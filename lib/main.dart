@@ -50,12 +50,12 @@ main() async {
   var platfromChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
       iOS: iOSPlatformChannelSpecifics);
-  print(_nextInstanceOfFridayTenAM());
+  print(_nextInstanceOfFridayElevenAM());
   await flutterLocalNotificationsPlugin.zonedSchedule(
       0,
       "Hello there!👋",
       'Checkout if you have any new reports!🤩',
-      _nextInstanceOfFridayTenAM(),
+      _nextInstanceOfFridayElevenAM(),
       platfromChannelSpecifics,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -71,20 +71,20 @@ Future<void> _configureLocalTimeZone() async {
   tz.setLocalLocation(tz.getLocation(timeZoneName!));
 }
 
-tz.TZDateTime _nextInstanceOfTenAM() {
+tz.TZDateTime _nextInstanceOfElevenAM() {
   final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
   print(now);
   tz.TZDateTime scheduledDate =
-      tz.TZDateTime(tz.local, now.year, now.month, now.day, 10);
+      tz.TZDateTime(tz.local, now.year, now.month, now.day, 11);
   if (scheduledDate.isBefore(now)) {
     scheduledDate = scheduledDate.add(const Duration(days: 1));
   }
   return scheduledDate;
 }
 
-tz.TZDateTime _nextInstanceOfFridayTenAM() {
-  tz.TZDateTime scheduledDate = _nextInstanceOfTenAM();
-  while (scheduledDate.weekday != DateTime.monday) {
+tz.TZDateTime _nextInstanceOfFridayElevenAM() {
+  tz.TZDateTime scheduledDate = _nextInstanceOfElevenAM();
+  while (scheduledDate.weekday != DateTime.friday) {
     scheduledDate = scheduledDate.add(const Duration(days: 1));
   }
   return scheduledDate;

@@ -79,12 +79,10 @@ class _UserAuthToUserDBState extends State<UserAuthToUserDB> {
     User user = authProvider.getCurrentUser()!;
     final email = user.email;
     final name = user.displayName;
-    final userAddedToDatabase = await firestore
-        .collection(myNames.usersTable)
-        .where(myNames.email, isEqualTo: email!)
-        .get();
-    if (userAddedToDatabase.docs.length == 0) {
-      await firestore.collection(myNames.usersTable).add({
+    final userAddedToDatabase =
+        await firestore.collection(myNames.usersTable).doc(user.uid).get();
+    if (!userAddedToDatabase.exists) {
+      await firestore.collection(myNames.usersTable).doc(user.uid).set({
         myNames.email: email,
         myNames.name: name,
         myNames.family: {},
