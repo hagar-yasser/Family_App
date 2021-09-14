@@ -123,7 +123,7 @@ class MyApp extends StatelessWidget {
                   subtitle1: GoogleFonts.patrickHand(
                       textStyle: TextStyle(color: Color(0xffF7A440)),
                       fontWeight: FontWeight.w800))),
-          title: 'FamilyApp trial',
+          title: 'FamilyApp',
           home: Wrapper()),
     );
   }
