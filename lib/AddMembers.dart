@@ -19,6 +19,7 @@ class AddMembersWrapper extends StatelessWidget {
             future: firestore
                 .collection(myNames.usersTable)
                 .where(myNames.email, isEqualTo: myEmail)
+                .limit(1)
                 .get(),
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {

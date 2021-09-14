@@ -23,6 +23,7 @@ class _FamilyState extends State<Family> {
       stream: firestore
           .collection(myNames.usersTable)
           .where(myNames.email, isEqualTo: myEmail)
+          .limit(1)
           .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
@@ -287,11 +288,13 @@ class FamilyRequests extends StatelessWidget {
                                   QuerySnapshot myUser = await firestore
                                       .collection(myNames.usersTable)
                                       .where(myNames.email, isEqualTo: myEmail)
+                                      .limit(1)
                                       .get();
                                   QuerySnapshot requestedUser = await firestore
                                       .collection(myNames.usersTable)
                                       .where(myNames.email,
                                           isEqualTo: familyRequestsIDs[index])
+                                      .limit(1)
                                       .get();
                                   await firestore
                                       .collection(myNames.usersTable)
@@ -323,11 +326,13 @@ class FamilyRequests extends StatelessWidget {
                                   QuerySnapshot myUser = await firestore
                                       .collection(myNames.usersTable)
                                       .where(myNames.email, isEqualTo: myEmail)
+                                      .limit(1)
                                       .get();
                                   QuerySnapshot requestedUser = await firestore
                                       .collection(myNames.usersTable)
                                       .where(myNames.email,
                                           isEqualTo: familyRequestsIDs[index])
+                                      .limit(1)
                                       .get();
                                   await firestore
                                       .collection(myNames.usersTable)

@@ -20,6 +20,7 @@ class _ReportsBriefState extends State<ReportsBrief> {
     QuerySnapshot myQuery = await firestore
         .collection(myNames.usersTable)
         .where(myNames.email, isEqualTo: email)
+        .limit(1)
         .get();
     DocumentSnapshot myDoc = myQuery.docs[0];
     String id = myDoc.id;
@@ -103,18 +104,23 @@ class _ReportsBriefState extends State<ReportsBrief> {
                 setState(() {});
               },
               child: (reportsIDs.length == 0)
-                  ? Center(
-                      child: Card(
-                        elevation: 8,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "There are no reports to show yet. Add an activity from the home page and when it finishes its report will appear here",
-                            style: TextStyle(fontSize: 20),
+                  ? ListView(children: [
+                      Container(
+                        height: MediaQuery.of(context).size.height * 0.8,
+                        child: Center(
+                          child: Card(
+                            elevation: 8,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                "There are no reports to show yet. Add an activity from the home page and when it finishes its report will appear here",
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    )
+                    ])
                   : Scrollbar(
                       controller: _scrollController,
                       isAlwaysShown: true,

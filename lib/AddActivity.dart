@@ -270,10 +270,6 @@ class _AddActivityState extends State<AddActivity> {
                                       content: Text(
                                           'Please enter the activity name!')));
                             } else {
-                              final userInDB = await firestore
-                                  .collection(myNames.usersTable)
-                                  .where(myNames.email, isEqualTo: myEmail)
-                                  .get();
                               final timeAdded = new DateTime.now().toUtc();
                               final endTime = timeAdded
                                   .add(new Duration(
@@ -297,6 +293,7 @@ class _AddActivityState extends State<AddActivity> {
                                 var member = await firestore
                                     .collection(myNames.usersTable)
                                     .where(myNames.email, isEqualTo: key)
+                                    .limit(1)
                                     .get();
                                 DocumentSnapshot myMember = member.docs[0];
 

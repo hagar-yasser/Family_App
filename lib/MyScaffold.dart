@@ -29,6 +29,7 @@ class _MyScaffoldWrapperState extends State<MyScaffoldWrapper> {
     myUser = firestore
         .collection(myNames.usersTable)
         .where(myNames.email, isEqualTo: myEmail)
+        .limit(1)
         .get();
   }
 

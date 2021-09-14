@@ -103,10 +103,12 @@ class _ProfileState extends State<Profile> {
       QuerySnapshot myUser = await firestore
           .collection(myNames.usersTable)
           .where(myNames.email, isEqualTo: myEmail)
+          .limit(1)
           .get();
       QuerySnapshot requestedUser = await firestore
           .collection(myNames.usersTable)
           .where(myNames.email, isEqualTo: email)
+          .limit(1)
           .get();
       if (requestedUser.docs.length == 0) {
         _showMessageDialog(
@@ -125,9 +127,12 @@ class _ProfileState extends State<Profile> {
         _showMessageDialog(context, "Family Request already sent", "");
         return;
       }
+      print('hello');
+      print((requestedUser.docs[0].data() as Map)[myNames.familyRequests]
+          [(requestedUser.docs[0].data() as Map)[myNames.email]]);
       await firestore
           .collection(myNames.usersTable)
-          .doc(myUser.docs[0].id)
+          .doc(requestedUser.docs[0].id)
           .set({
         myNames.familyRequests: {
           email: {myEmail: 'pending'}
@@ -135,7 +140,7 @@ class _ProfileState extends State<Profile> {
       }, SetOptions(merge: true));
       await firestore
           .collection(myNames.usersTable)
-          .doc(requestedUser.docs[0].id)
+          .doc(myUser.docs[0].id)
           .set({
         myNames.familyRequests: {
           email: {myEmail: 'pending'}

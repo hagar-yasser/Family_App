@@ -58,6 +58,10 @@ class _ResetPasswordState extends State<ResetPassword> {
                                   try {
                                     await authProvider
                                         .resetPassword(_controller.text);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                "Reset Password email was sent. Please check your email")));
                                     Navigator.of(context).pop();
                                   } on Exception catch (e) {
                                     _showErrorDialog(context,

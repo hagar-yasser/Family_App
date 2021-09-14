@@ -29,8 +29,7 @@ FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _configureLocalTimeZone();
-  var initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+  var initializationSettingsAndroid = AndroidInitializationSettings('kids');
   var initializationSettingsIOS = IOSInitializationSettings(
       onDidReceiveLocalNotification:
           (int id, String? title, String? body, String? payload) async {});
@@ -44,7 +43,7 @@ main() async {
   });
   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       "weekly_check_reports", "weekly_check_reports", "weekly_check_reports",
-      importance: Importance.max);
+      importance: Importance.max, icon: "kids");
   var iOSPlatformChannelSpecifics = IOSNotificationDetails(
       presentAlert: true, presentBadge: true, presentSound: true);
   var platfromChannelSpecifics = NotificationDetails(
