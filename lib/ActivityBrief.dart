@@ -312,6 +312,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                           ),
                                         ),
                                         MyRoundedLoadingButton(
+                                          key: Key(activitiesIDs[index]),
                                           action: () async {
                                             await checkActivityDone(
                                                 activities[
