@@ -43,6 +43,7 @@ class _WrapperState extends State<Wrapper> {
               print(user.email);
               return UserAuthToUserDB();
             } else {
+              print("user from wrapper " + user.toString());
               return FullSignIn();
             }
           }

@@ -73,6 +73,7 @@ class _ReportsBriefState extends State<ReportsBrief> {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
     String myEmail = user!.email!;
+    print("hello in reportsbrief build");
     return Scaffold(
       body: FutureBuilder(
         future: checkActivitiesStates(firestore, myEmail),

@@ -100,6 +100,7 @@ class MyApp extends StatelessWidget {
         )
       ],
       child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           routes: {
             ActivityBrief.routeName: (context) => ActivityBrief(),
             FullActivity.routeName: (context) => FullActivity(),

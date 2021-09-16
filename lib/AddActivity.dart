@@ -285,25 +285,40 @@ class _AddActivityState extends State<AddActivity> {
                                 myNames.timeAdded: timeAdded,
                                 myNames.endTime: endTime
                               };
-                              final activityRef = await firestore
-                                  .collection(myNames.activitiesTable)
-                                  .add(newActivity);
-                              final activityID = activityRef.id;
-                              _members.forEach((key, value) async {
-                                var member = await firestore
-                                    .collection(myNames.usersTable)
-                                    .where(myNames.email, isEqualTo: key)
-                                    .limit(1)
-                                    .get();
-                                DocumentSnapshot myMember = member.docs[0];
 
-                                await firestore
-                                    .collection(myNames.usersTable)
-                                    .doc(myMember.id)
-                                    .set({
-                                  myNames.activities: {activityID: newActivity}
-                                }, SetOptions(merge: true));
-                              });
+                              final internetCheck = await firestore
+                                  .collection(myNames.usersTable)
+                                  .doc(user!.uid)
+                                  .get();
+                              if (internetCheck.metadata.isFromCache) {
+                                if (this.mounted)
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              "A problem occurred when adding the activity. Please check your internet connectivity")));
+                              } else {
+                                final activityRef = await firestore
+                                    .collection(myNames.activitiesTable)
+                                    .add(newActivity);
+                                final activityID = activityRef.id;
+                                _members.forEach((key, value) async {
+                                  var member = await firestore
+                                      .collection(myNames.usersTable)
+                                      .where(myNames.email, isEqualTo: key)
+                                      .limit(1)
+                                      .get();
+                                  DocumentSnapshot myMember = member.docs[0];
+
+                                  await firestore
+                                      .collection(myNames.usersTable)
+                                      .doc(myMember.id)
+                                      .set({
+                                    myNames.activities: {
+                                      activityID: newActivity
+                                    }
+                                  }, SetOptions(merge: true));
+                                });
+                              }
                               Navigator.pop(context);
                             }
                           },

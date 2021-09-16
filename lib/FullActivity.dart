@@ -1,3 +1,4 @@
+import 'package:family_app/MyRectangularButton.dart';
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
 import 'package:family_app/myNames.dart';
@@ -146,7 +147,10 @@ class FullActivity extends StatelessWidget {
                           padding: const EdgeInsets.all(8.0),
                           child: MyRoundedLoadingButton(
                             action: () {
-                              Navigator.pop(context, "Quit");
+                              _showMessageDialog(
+                                  context,
+                                  "Do you really want to quit this activity?",
+                                  "If you quit the activity, your participation in it will be deleted forever! Other members will not know until it's report time.");
                             },
                             child: Text("Quit this activity"),
                           ),
@@ -168,6 +172,44 @@ class FullActivity extends StatelessWidget {
     res += "${time.year}-${time.month}-${time.day} ${time.hour}:${time.minute}";
     return res;
   }
+}
+
+String? _showMessageDialog(BuildContext context, String title, String content) {
+  showDialog<void>(
+    barrierDismissible: false,
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 24),
+        ),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text(
+                content,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          MyButton(
+              action: () {
+                Navigator.pop(context);
+              },
+              text: 'Cancel'),
+          MyButton(
+              action: () {
+                Navigator.pop(context);
+                Navigator.pop(context, 'Quit');
+              },
+              text: 'Quit')
+        ],
+      );
+    },
+  );
 }
 
 class ListOfMembers extends StatelessWidget {

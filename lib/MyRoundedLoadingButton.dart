@@ -28,7 +28,9 @@ class _MyRoundedLoadingButtonState extends State<MyRoundedLoadingButton> {
   @override
   void dispose() {
     // TODO: implement dispose
+
     _isDisposed = true;
+
     super.dispose();
   }
 
@@ -39,9 +41,11 @@ class _MyRoundedLoadingButtonState extends State<MyRoundedLoadingButton> {
       successColor: Color(0xffEA907A),
       onPressed: () async {
         await widget.action();
-        if (!_isDisposed) {
+        if (!_isDisposed && mounted) {
           _loadingController.success();
-          Timer(Duration(seconds: 1), () => _loadingController.reset());
+          Timer(Duration(seconds: 1), () {
+            if (!_isDisposed && mounted) _loadingController.reset();
+          });
         }
       },
       child: widget.child,

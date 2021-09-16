@@ -23,7 +23,7 @@ class ActivityBrief extends StatefulWidget {
 class _ActivityBriefState extends State<ActivityBrief> {
   ScrollController _scrollController = ScrollController();
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  late final myUserDataStream;
+  late final Stream<DocumentSnapshot> myUserDataStream;
   @override
   void initState() {
     super.initState();
@@ -64,6 +64,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
             stream: myUserDataStream,
             builder: (BuildContext context,
                 AsyncSnapshot<DocumentSnapshot> docSnapshot) {
+              print('from activityBrief stream');
               if (docSnapshot.hasError) {
                 return Center(
                   child:
@@ -104,7 +105,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                "There are no activities. Try to add an activity from the button below.",
+                                "There are no activities. Add an activity from the add (+) button below.",
                                 style: TextStyle(fontSize: 20),
                               ),
                             ),
@@ -382,7 +383,7 @@ class _ActivityBriefState extends State<ActivityBrief> {
       if (endTime.compareTo(clickedTime) <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
-                "Activity has ended! Check its report in the reports section.")));
+                "Activity has ended! Check its report by refreshing the reports section.")));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("Activity already checked for this " +

@@ -14,18 +14,28 @@ class Family extends StatefulWidget {
 }
 
 class _FamilyState extends State<Family> {
+  late final myUserStream;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  @override
+  void initState() {
+    super.initState();
+    String? myEmail =
+        Provider.of<Auth>(context, listen: false).getCurrentUser()!.email;
+    myUserStream = firestore
+        .collection(myNames.usersTable)
+        .where(myNames.email, isEqualTo: myEmail)
+        .limit(1)
+        .snapshots();
+  }
+
   @override
   Widget build(BuildContext context) {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = Provider.of<Auth>(context).getCurrentUser();
     String myEmail = user!.email!;
     return StreamBuilder(
-      stream: firestore
-          .collection(myNames.usersTable)
-          .where(myNames.email, isEqualTo: myEmail)
-          .limit(1)
-          .snapshots(),
+      stream: myUserStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        print('from family stream');
         if (snapshot.hasError) {
           return Center(child: Text("Something went wrong"));
         }
@@ -85,6 +95,9 @@ class _FamilyTypeState extends State<FamilyType> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TabBar(
+                  labelColor: Colors.white,
+                  unselectedLabelColor:
+                      Theme.of(context).textTheme.bodyText1!.color,
                   indicator: BoxDecoration(
                       borderRadius: BorderRadius.circular(50), // Creates border
                       color: Color(0xffEA907A)),
@@ -93,27 +106,23 @@ class _FamilyTypeState extends State<FamilyType> {
                       child: Text(
                         "My Family",
                         style: TextStyle(
-                            fontFeatures: Theme.of(context)
-                                .textTheme
-                                .bodyText1!
-                                .fontFeatures,
-                            fontSize: 15,
-                            color:
-                                Theme.of(context).textTheme.bodyText1!.color),
+                          fontFeatures: Theme.of(context)
+                              .textTheme
+                              .bodyText1!
+                              .fontFeatures,
+                          fontSize: 15,
+                        ),
                       ),
                     ),
                     Tab(
                       child: Text("Family Requests",
                           style: TextStyle(
-                              fontFeatures: Theme.of(context)
-                                  .textTheme
-                                  .bodyText1!
-                                  .fontFeatures,
-                              fontSize: 15,
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyText1!
-                                  .color)),
+                            fontFeatures: Theme.of(context)
+                                .textTheme
+                                .bodyText1!
+                                .fontFeatures,
+                            fontSize: 15,
+                          )),
                     )
                   ],
                 ),
