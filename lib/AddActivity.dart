@@ -301,6 +301,7 @@ class _AddActivityState extends State<AddActivity> {
                                     .collection(myNames.activitiesTable)
                                     .add(newActivity);
                                 final activityID = activityRef.id;
+                                final List<String?> tokens = [];
                                 _members.forEach((key, value) async {
                                   var member = await firestore
                                       .collection(myNames.usersTable)
@@ -308,7 +309,9 @@ class _AddActivityState extends State<AddActivity> {
                                       .limit(1)
                                       .get();
                                   DocumentSnapshot myMember = member.docs[0];
-
+                                  //Add its token to token array that will be sent to the cloud
+                                  //function that will send notifications to other users
+                                  tokens.add(myMember[myNames.token]);
                                   await firestore
                                       .collection(myNames.usersTable)
                                       .doc(myMember.id)
@@ -319,6 +322,7 @@ class _AddActivityState extends State<AddActivity> {
                                   }, SetOptions(merge: true));
                                 });
                               }
+                              //call the cloud function that will send notifications
                               Navigator.pop(context);
                             }
                           },

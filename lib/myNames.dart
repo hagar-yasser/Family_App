@@ -15,4 +15,5 @@ class myNames {
   static const familyRequests = 'familyRequests';
   static const reports = 'reports';
   static const reportsSent = 'reportsSent';
+  static const token = 'token';
 }

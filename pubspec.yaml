@@ -39,6 +39,7 @@ dependencies:
   rounded_loading_button: ^2.0.3
   flutter_local_notifications: ^8.1.1+2
   flutter_native_timezone: ^2.0.0
+  firebase_messaging: ^10.0.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

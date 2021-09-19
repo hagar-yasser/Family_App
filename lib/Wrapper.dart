@@ -7,8 +7,9 @@ import 'package:family_app/objects/Activity.dart';
 import 'package:family_app/objects/MyUser.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'authorization/Auth.dart';
 
 class Wrapper extends StatefulWidget {
@@ -77,6 +78,8 @@ class _UserAuthToUserDBState extends State<UserAuthToUserDB> {
     authProvider.printCurrentUserEmail();
     if (authProvider.getCurrentUser() == null) return;
     FirebaseFirestore firestore = FirebaseFirestore.instance;
+    FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+    String? token = await firebaseMessaging.getToken();
     User user = authProvider.getCurrentUser()!;
     final email = user.email;
     final name = user.displayName;
@@ -88,8 +91,18 @@ class _UserAuthToUserDBState extends State<UserAuthToUserDB> {
         myNames.name: name,
         myNames.family: {},
         myNames.activities: {},
-        myNames.familyRequests: {}
+        myNames.familyRequests: {},
       });
+      await firestore
+          .collection(myNames.usersTable)
+          .doc(user.uid)
+          .set({myNames.token: token}, SetOptions(merge: true));
+    } else {
+      if (!userAddedToDatabase.data()!.containsKey(myNames.token))
+        await firestore
+            .collection(myNames.usersTable)
+            .doc(user.uid)
+            .set({myNames.token: token}, SetOptions(merge: true));
     }
   }
 
