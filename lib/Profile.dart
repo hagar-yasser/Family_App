@@ -92,12 +92,12 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<void> sendFamilyRequest(String email, User? user) async {
-    if (email.isEmpty) {
+    if (email.isEmpty || (email.replaceAll(' ', '').isEmpty)) {
       _showMessageDialog(context, "please enter a valid email", "");
       return;
     } else {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-
+      email = email.toLowerCase();
       String myEmail = user!.email!;
 
       QuerySnapshot myUser = await firestore

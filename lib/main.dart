@@ -27,6 +27,13 @@ import 'package:timezone/timezone.dart' as tz;
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    "weekly_check_reports", "weekly_check_reports", "weekly_check_reports",
+    importance: Importance.max, icon: "kids");
+var iOSPlatformChannelSpecifics = IOSNotificationDetails(
+    presentAlert: true, presentBadge: true, presentSound: true);
+var platfromChannelSpecifics = NotificationDetails(
+    android: androidPlatformChannelSpecifics, iOS: iOSPlatformChannelSpecifics);
 main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _configureLocalTimeZone();
@@ -42,14 +49,7 @@ main() async {
       debugPrint('notification payload: ' + payload);
     }
   });
-  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      "weekly_check_reports", "weekly_check_reports", "weekly_check_reports",
-      importance: Importance.max, icon: "kids");
-  var iOSPlatformChannelSpecifics = IOSNotificationDetails(
-      presentAlert: true, presentBadge: true, presentSound: true);
-  var platfromChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-      iOS: iOSPlatformChannelSpecifics);
+
   print(_nextInstanceOfFridayElevenAM());
   await flutterLocalNotificationsPlugin.zonedSchedule(
       0,
@@ -67,39 +67,29 @@ main() async {
     badge: true,
     sound: true,
   );
-  const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    'high_importance_channel', // id
-    'High Importance Notifications', // title
-    'This channel is used for important notifications.', // description
-    importance: Importance.max,
-  );
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
+
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
 
     // If `onMessage` is triggered with a notification, construct our own
     // local notification to show to users using the created channel.
-    if (notification != null && android != null) {
-      flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-            android: AndroidNotificationDetails(
-              channel.id,
-              channel.name,
-              channel.description,
-              icon: "kids",
-              // other properties...
-            ),
-          ));
+    print('handling foreground message');
+    if (notification != null) {
+      flutterLocalNotificationsPlugin.show(notification.hashCode,
+          notification.title, notification.body, platfromChannelSpecifics);
     }
   });
+  FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
   runApp(MyApp());
+}
+
+Future<void> _backgroundMessageHandler(message) async {
+  print('handling background message');
+  RemoteNotification? notification = message.notification;
+  if (notification != null) {
+    flutterLocalNotificationsPlugin.show(notification.hashCode,
+        notification.title, notification.body, platfromChannelSpecifics);
+  }
 }
 
 Future<void> _configureLocalTimeZone() async {

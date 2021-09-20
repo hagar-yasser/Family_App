@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:family_app/myNames.dart';
@@ -264,7 +265,10 @@ class _AddActivityState extends State<AddActivity> {
                       child: MyRoundedLoadingButton(
                           action: () async {
                             if (_controller.text == null ||
-                                _controller.text.isEmpty) {
+                                _controller.text.isEmpty ||
+                                (_controller.text
+                                    .replaceAll(' ', '')
+                                    .isEmpty)) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                       content: Text(
@@ -311,7 +315,9 @@ class _AddActivityState extends State<AddActivity> {
                                   DocumentSnapshot myMember = member.docs[0];
                                   //Add its token to token array that will be sent to the cloud
                                   //function that will send notifications to other users
-                                  tokens.add(myMember[myNames.token]);
+                                  if (key != myEmail)
+                                    tokens.add((myMember.data()!
+                                        as Map)[myNames.token]);
                                   await firestore
                                       .collection(myNames.usersTable)
                                       .doc(myMember.id)
@@ -321,6 +327,23 @@ class _AddActivityState extends State<AddActivity> {
                                     }
                                   }, SetOptions(merge: true));
                                 });
+                                FirebaseFunctions functions =
+                                    FirebaseFunctions.instance;
+                                HttpsCallable notifyMembersNewActivity =
+                                    FirebaseFunctions.instanceFor(
+                                            region: "europe-west2")
+                                        .httpsCallable(
+                                            'notifyMembersNewActivity');
+                                try {
+                                  Map data = {
+                                    "name": user.displayName,
+                                    'activityName': newActivity[myNames.name],
+                                    'tokens': tokens
+                                  };
+                                  await notifyMembersNewActivity.call(data);
+                                } on Exception catch (e) {
+                                  print(e.toString());
+                                }
                               }
                               //call the cloud function that will send notifications
                               Navigator.pop(context);
