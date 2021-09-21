@@ -28,8 +28,8 @@ import 'package:timezone/timezone.dart' as tz;
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-    "weekly_check_reports", "weekly_check_reports", "weekly_check_reports",
-    importance: Importance.max, icon: "kids");
+    "weekly_check_reportsWithSound", "weekly_check_reports", "weekly_check_reports",
+    importance: Importance.max, icon: "kids",sound: RawResourceAndroidNotificationSound('what_friends_are_for_507'));
 var iOSPlatformChannelSpecifics = IOSNotificationDetails(
     presentAlert: true, presentBadge: true, presentSound: true);
 var platfromChannelSpecifics = NotificationDetails(
@@ -53,8 +53,8 @@ main() async {
   print(_nextInstanceOfFridayElevenAM());
   await flutterLocalNotificationsPlugin.zonedSchedule(
       0,
-      "Hello there!👋",
-      'Checkout if you have any new reports!🤩',
+      "Hello there from FamilyApp!👋",
+      'Add a new family activity and have some family time!🤩',
       _nextInstanceOfFridayElevenAM(),
       platfromChannelSpecifics,
       uiLocalNotificationDateInterpretation:
@@ -62,6 +62,16 @@ main() async {
       androidAllowWhileIdle: true,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime);
   await Firebase.initializeApp();
+  await FirebaseMessaging.instance.getToken();
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true, // Required to display a heads up notification
     badge: true,

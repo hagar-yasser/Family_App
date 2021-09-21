@@ -46,22 +46,46 @@ class _ReportsBriefState extends State<ReportsBrief> {
               .collection(myNames.activitiesTable)
               .doc(activitiesIDs[i])
               .get();
-          await firestore.collection(myNames.usersTable).doc(id).set({
-            myNames.activities: {activitiesIDs[i]: FieldValue.delete()}
-          }, SetOptions(merge: true));
+          WriteBatch updateReports = firestore.batch();
+          updateReports.set(
+              firestore.collection(myNames.usersTable).doc(id),
+              {
+                myNames.activities: {activitiesIDs[i]: FieldValue.delete()},
+              },
+              SetOptions(merge: true));
+          // await firestore.collection(myNames.usersTable).doc(id).set({
+          //   myNames.activities: {activitiesIDs[i]: FieldValue.delete()}
+          // }, SetOptions(merge: true));
           print(
               "activity original data: " + activityOriginal.data().toString());
-          await firestore.collection(myNames.usersTable).doc(id).set({
-            myNames.reports: {
-              activitiesIDs[i]: (activityOriginal.data() as Map)
-            }
-          }, SetOptions(merge: true));
-          await firestore
-              .collection(myNames.activitiesTable)
-              .doc(activitiesIDs[i])
-              .set({
-            myNames.reportsSent: {myDoc[myNames.email]: true}
-          }, SetOptions(merge: true));
+          updateReports.set(
+              firestore.collection(myNames.usersTable).doc(id),
+              {
+                myNames.reports: {
+                  activitiesIDs[i]: (activityOriginal.data() as Map)
+                }
+              },
+              SetOptions(merge: true));
+          // await firestore.collection(myNames.usersTable).doc(id).set({
+          //   myNames.reports: {
+          //     activitiesIDs[i]: (activityOriginal.data() as Map)
+          //   }
+          // }, SetOptions(merge: true));
+          updateReports.set(
+              firestore
+                  .collection(myNames.activitiesTable)
+                  .doc(activitiesIDs[i]),
+              {
+                myNames.reportsSent: {myDoc[myNames.email]: true}
+              },
+              SetOptions(merge: true));
+          // await firestore
+          //     .collection(myNames.activitiesTable)
+          //     .doc(activitiesIDs[i])
+          //     .set({
+          //   myNames.reportsSent: {myDoc[myNames.email]: true}
+          // }, SetOptions(merge: true));
+          await updateReports.commit();
         }
       }
     }

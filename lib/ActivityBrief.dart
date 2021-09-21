@@ -259,14 +259,17 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                                         content:
                                                                             Text("A problem occurred when quitting the activity. Please check your internet connectivity")));
                                                         } else {
-                                                          await firestore
-                                                              .collection(myNames
-                                                                  .activitiesTable)
-                                                              .doc(
-                                                                  activitiesIDs[
-                                                                      index])
-                                                              .set(
-                                                                  {
+                                                          WriteBatch
+                                                              quitActivity =
+                                                              firestore.batch();
+                                                          quitActivity.set(
+                                                              firestore
+                                                                  .collection(
+                                                                      myNames
+                                                                          .activitiesTable)
+                                                                  .doc(activitiesIDs[
+                                                                      index]),
+                                                              {
                                                                 myNames.members:
                                                                     {
                                                                   myEmail:
@@ -274,20 +277,40 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                                           .delete()
                                                                 }
                                                               },
-                                                                  SetOptions(
-                                                                      merge:
-                                                                          true));
+                                                              SetOptions(
+                                                                  merge: true));
+                                                          // await firestore
+                                                          //     .collection(myNames
+                                                          //         .activitiesTable)
+                                                          //     .doc(
+                                                          //         activitiesIDs[
+                                                          //             index])
+                                                          //     .set(
+                                                          //         {
+                                                          //       myNames.members:
+                                                          //           {
+                                                          //         myEmail:
+                                                          //             FieldValue
+                                                          //                 .delete()
+                                                          //       }
+                                                          //     },
+                                                          //         SetOptions(
+                                                          //             merge:
+                                                          //                 true));
                                                           //REMOVE THIS ACTIVITY FROM MY ACTIVITIES IN THE USER TABLE
-                                                          activities.remove(
-                                                              activitiesIDs[
-                                                                  index]);
-                                                          await firestore
-                                                              .collection(myNames
-                                                                  .usersTable)
-                                                              .doc(docSnapshot
-                                                                  .data!.id)
-                                                              .set(
-                                                                  {
+                                                          // activities.remove(
+                                                          //     activitiesIDs[
+                                                          //         index]);
+                                                          quitActivity.set(
+                                                              firestore
+                                                                  .collection(
+                                                                      myNames
+                                                                          .usersTable)
+                                                                  .doc(
+                                                                      docSnapshot
+                                                                          .data!
+                                                                          .id),
+                                                              {
                                                                 myNames
                                                                     .activities: {
                                                                   activitiesIDs[
@@ -296,9 +319,27 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                                           .delete()
                                                                 }
                                                               },
-                                                                  SetOptions(
-                                                                      merge:
-                                                                          true));
+                                                              SetOptions(
+                                                                  merge: true));
+                                                          // await firestore
+                                                          //     .collection(myNames
+                                                          //         .usersTable)
+                                                          //     .doc(docSnapshot
+                                                          //         .data!.id)
+                                                          //     .set(
+                                                          //         {
+                                                          //       myNames
+                                                          //           .activities: {
+                                                          //         activitiesIDs[
+                                                          //                 index]:
+                                                          //             FieldValue
+                                                          //                 .delete()
+                                                          //       }
+                                                          //     },
+                                                          //         SetOptions(
+                                                          //             merge:
+                                                          //                 true));
+                                                          quitActivity.commit();
                                                         }
                                                       }
                                                     }
@@ -365,21 +406,38 @@ class _ActivityBriefState extends State<ActivityBrief> {
                   "A problem occurred when updating your points. Please check your internet connectivity")));
         return;
       }
-
-      await firestore.collection(myNames.activitiesTable).doc(activityID).set({
-        myNames.members: {
-          email: {
-            myNames.points: activity[myNames.members][email][myNames.points]
-          }
-        }
-      }, SetOptions(merge: true));
+      WriteBatch updatePoints = firestore.batch();
+      updatePoints.set(
+          firestore.collection(myNames.activitiesTable).doc(activityID),
+          {
+            myNames.members: {
+              email: {
+                myNames.points: activity[myNames.members][email][myNames.points]
+              }
+            }
+          },
+          SetOptions(merge: true));
+      // await firestore.collection(myNames.activitiesTable).doc(activityID).set({
+      //   myNames.members: {
+      //     email: {
+      //       myNames.points: activity[myNames.members][email][myNames.points]
+      //     }
+      //   }
+      // }, SetOptions(merge: true));
       //UPDATE MY ACTIVITY IN THE USERS TABLE
-      await firestore
-          .collection(myNames.usersTable)
-          .doc(docSnapshot.data!.id)
-          .set({
-        myNames.activities: {activityID: activity}
-      }, SetOptions(merge: true));
+      updatePoints.set(
+          firestore.collection(myNames.usersTable).doc(docSnapshot.data!.id),
+          {
+            myNames.activities: {activityID: activity}
+          },
+          SetOptions(merge: true));
+      // await firestore
+      //     .collection(myNames.usersTable)
+      //     .doc(docSnapshot.data!.id)
+      //     .set({
+      //   myNames.activities: {activityID: activity}
+      // }, SetOptions(merge: true));
+      await updatePoints.commit();
     } else {
       if (endTime.compareTo(clickedTime) <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

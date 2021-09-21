@@ -301,12 +301,20 @@ class _AddActivityState extends State<AddActivity> {
                                           content: Text(
                                               "A problem occurred when adding the activity. Please check your internet connectivity")));
                               } else {
-                                final activityRef = await firestore
+                                WriteBatch addActivity =
+                                    FirebaseFirestore.instance.batch();
+                                final newActivityRef = firestore
                                     .collection(myNames.activitiesTable)
-                                    .add(newActivity);
-                                final activityID = activityRef.id;
+                                    .doc();
+                                addActivity.set(newActivityRef, newActivity);
+                                // final activityRef = await firestore
+                                //     .collection(myNames.activitiesTable)
+                                //     .add(newActivity);
+                                final activityID = newActivityRef.id;
                                 final List<String?> tokens = [];
-                                _members.forEach((key, value) async {
+                                for (MapEntry<dynamic, dynamic> m
+                                    in _members.entries) {
+                                  var key = m.key;
                                   var member = await firestore
                                       .collection(myNames.usersTable)
                                       .where(myNames.email, isEqualTo: key)
@@ -315,18 +323,34 @@ class _AddActivityState extends State<AddActivity> {
                                   DocumentSnapshot myMember = member.docs[0];
                                   //Add its token to token array that will be sent to the cloud
                                   //function that will send notifications to other users
-                                  if (key != myEmail)
+                                  // print(
+                                  //     (myMember.data()! as Map)[myNames.token]);
+                                  if (key != myEmail) {
                                     tokens.add((myMember.data()!
                                         as Map)[myNames.token]);
-                                  await firestore
-                                      .collection(myNames.usersTable)
-                                      .doc(myMember.id)
-                                      .set({
-                                    myNames.activities: {
-                                      activityID: newActivity
-                                    }
-                                  }, SetOptions(merge: true));
-                                });
+                                  }
+                                  addActivity.set(
+                                      firestore
+                                          .collection(myNames.usersTable)
+                                          .doc(myMember.id),
+                                      {
+                                        myNames.activities: {
+                                          activityID: newActivity
+                                        }
+                                      },
+                                      SetOptions(merge: true));
+                                  // await firestore
+                                  //     .collection(myNames.usersTable)
+                                  //     .doc(myMember.id)
+                                  //     .set({
+                                  //   myNames.activities: {
+                                  //     activityID: newActivity
+                                  //   }
+                                  // }, SetOptions(merge: true));
+                                }
+                                await addActivity.commit();
+
+                                print(tokens.toString());
                                 FirebaseFunctions functions =
                                     FirebaseFunctions.instance;
                                 HttpsCallable notifyMembersNewActivity =
@@ -346,7 +370,7 @@ class _AddActivityState extends State<AddActivity> {
                                 }
                               }
                               //call the cloud function that will send notifications
-                              Navigator.pop(context);
+                              if (this.mounted) Navigator.pop(context);
                             }
                           },
                           child: Text("Add")),

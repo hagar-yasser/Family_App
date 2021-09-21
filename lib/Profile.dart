@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:family_app/MyRectangularButton.dart';
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/authorization/Auth.dart';
@@ -130,22 +131,54 @@ class _ProfileState extends State<Profile> {
       print('hello');
       print((requestedUser.docs[0].data() as Map)[myNames.familyRequests]
           [(requestedUser.docs[0].data() as Map)[myNames.email]]);
-      await firestore
-          .collection(myNames.usersTable)
-          .doc(requestedUser.docs[0].id)
-          .set({
-        myNames.familyRequests: {
-          email: {myEmail: 'pending'}
-        }
-      }, SetOptions(merge: true));
-      await firestore
-          .collection(myNames.usersTable)
-          .doc(myUser.docs[0].id)
-          .set({
-        myNames.familyRequests: {
-          email: {myEmail: 'pending'}
-        }
-      }, SetOptions(merge: true));
+      WriteBatch addRequest = firestore.batch();
+      addRequest.set(
+          firestore
+              .collection(myNames.usersTable)
+              .doc(requestedUser.docs[0].id),
+          {
+            myNames.familyRequests: {
+              email: {myEmail: 'pending'}
+            }
+          },
+          SetOptions(merge: true));
+      // await firestore
+      //     .collection(myNames.usersTable)
+      //     .doc(requestedUser.docs[0].id)
+      //     .set({
+      //   myNames.familyRequests: {
+      //     email: {myEmail: 'pending'}
+      //   }
+      // }, SetOptions(merge: true));
+      addRequest.set(
+          firestore.collection(myNames.usersTable).doc(myUser.docs[0].id),
+          {
+            myNames.familyRequests: {
+              email: {myEmail: 'pending'}
+            }
+          },
+          SetOptions(merge: true));
+      // await firestore
+      //     .collection(myNames.usersTable)
+      //     .doc(myUser.docs[0].id)
+      //     .set({
+      //   myNames.familyRequests: {
+      //     email: {myEmail: 'pending'}
+      //   }
+      // }, SetOptions(merge: true));
+      await addRequest.commit();
+      FirebaseFunctions functions = FirebaseFunctions.instance;
+      HttpsCallable notifyNewFamilyRequest =
+          FirebaseFunctions.instanceFor(region: "europe-west2")
+              .httpsCallable('notifyNewFamilyRequest');
+      try {
+        Map data = {
+          'token': (requestedUser.docs[0].data()! as Map)[myNames.token]
+        };
+        await notifyNewFamilyRequest.call(data);
+      } on Exception catch (e) {
+        print(e.toString());
+      }
     }
   }
 

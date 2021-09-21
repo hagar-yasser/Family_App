@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:family_app/MyRectangularButton.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:family_app/myNames.dart';
@@ -305,25 +306,50 @@ class FamilyRequests extends StatelessWidget {
                                           isEqualTo: familyRequestsIDs[index])
                                       .limit(1)
                                       .get();
-                                  await firestore
-                                      .collection(myNames.usersTable)
-                                      .doc(myUser.docs[0].id)
-                                      .set({
-                                    myNames.familyRequests: {
-                                      myEmail: {
-                                        familyRequestsIDs[index]:
-                                            FieldValue.delete()
-                                      }
-                                    }
-                                  }, SetOptions(merge: true));
-                                  await firestore
-                                      .collection(myNames.usersTable)
-                                      .doc(requestedUser.docs[0].id)
-                                      .set({
-                                    myNames.familyRequests: {
-                                      myEmail: FieldValue.delete()
-                                    }
-                                  }, SetOptions(merge: true));
+                                  WriteBatch rejectRequest = firestore.batch();
+                                  rejectRequest.set(
+                                      firestore
+                                          .collection(myNames.usersTable)
+                                          .doc(myUser.docs[0].id),
+                                      {
+                                        myNames.familyRequests: {
+                                          myEmail: {
+                                            familyRequestsIDs[index]:
+                                                FieldValue.delete()
+                                          }
+                                        }
+                                      },
+                                      SetOptions(merge: true));
+                                  // await firestore
+                                  //     .collection(myNames.usersTable)
+                                  //     .doc(myUser.docs[0].id)
+                                  //     .set({
+                                  //   myNames.familyRequests: {
+                                  //     myEmail: {
+                                  //       familyRequestsIDs[index]:
+                                  //           FieldValue.delete()
+                                  //     }
+                                  //   }
+                                  // }, SetOptions(merge: true));
+                                  rejectRequest.set(
+                                      firestore
+                                          .collection(myNames.usersTable)
+                                          .doc(requestedUser.docs[0].id),
+                                      {
+                                        myNames.familyRequests: {
+                                          myEmail: FieldValue.delete()
+                                        }
+                                      },
+                                      SetOptions(merge: true));
+                                  // await firestore
+                                  //     .collection(myNames.usersTable)
+                                  //     .doc(requestedUser.docs[0].id)
+                                  //     .set({
+                                  //   myNames.familyRequests: {
+                                  //     myEmail: FieldValue.delete()
+                                  //   }
+                                  // }, SetOptions(merge: true));
+                                  await rejectRequest.commit();
                                 },
                                 icon: Icon(Icons.cancel_outlined)),
                           ),
@@ -343,37 +369,92 @@ class FamilyRequests extends StatelessWidget {
                                           isEqualTo: familyRequestsIDs[index])
                                       .limit(1)
                                       .get();
-                                  await firestore
-                                      .collection(myNames.usersTable)
-                                      .doc(myUser.docs[0].id)
-                                      .set({
-                                    myNames.familyRequests: {
-                                      myEmail: {
-                                        familyRequestsIDs[index]:
-                                            FieldValue.delete()
-                                      }
-                                    },
-                                    myNames.family: {
-                                      familyRequestsIDs[index]: {
-                                        myNames.name: requestedUser.docs[0]
-                                            [myNames.name]
-                                      }
-                                    }
-                                  }, SetOptions(merge: true));
-                                  await firestore
-                                      .collection(myNames.usersTable)
-                                      .doc(requestedUser.docs[0].id)
-                                      .set({
-                                    myNames.familyRequests: {
-                                      myEmail: FieldValue.delete()
-                                    },
-                                    myNames.family: {
-                                      myEmail: {
-                                        myNames.name: myUser.docs[0]
-                                            [myNames.name]
-                                      }
-                                    }
-                                  }, SetOptions(merge: true));
+                                  WriteBatch acceptRequest = firestore.batch();
+                                  acceptRequest.set(
+                                      firestore
+                                          .collection(myNames.usersTable)
+                                          .doc(myUser.docs[0].id),
+                                      {
+                                        myNames.familyRequests: {
+                                          myEmail: {
+                                            familyRequestsIDs[index]:
+                                                FieldValue.delete()
+                                          }
+                                        },
+                                        myNames.family: {
+                                          familyRequestsIDs[index]: {
+                                            myNames.name: requestedUser.docs[0]
+                                                [myNames.name]
+                                          }
+                                        }
+                                      },
+                                      SetOptions(merge: true));
+                                  // await firestore
+                                  //     .collection(myNames.usersTable)
+                                  //     .doc(myUser.docs[0].id)
+                                  //     .set({
+                                  //   myNames.familyRequests: {
+                                  //     myEmail: {
+                                  //       familyRequestsIDs[index]:
+                                  //           FieldValue.delete()
+                                  //     }
+                                  //   },
+                                  //   myNames.family: {
+                                  //     familyRequestsIDs[index]: {
+                                  //       myNames.name: requestedUser.docs[0]
+                                  //           [myNames.name]
+                                  //     }
+                                  //   }
+                                  // }, SetOptions(merge: true));
+                                  acceptRequest.set(
+                                      firestore
+                                          .collection(myNames.usersTable)
+                                          .doc(requestedUser.docs[0].id),
+                                      {
+                                        myNames.familyRequests: {
+                                          myEmail: FieldValue.delete()
+                                        },
+                                        myNames.family: {
+                                          myEmail: {
+                                            myNames.name: myUser.docs[0]
+                                                [myNames.name]
+                                          }
+                                        }
+                                      },
+                                      SetOptions(merge: true));
+                                  // await firestore
+                                  //     .collection(myNames.usersTable)
+                                  //     .doc(requestedUser.docs[0].id)
+                                  //     .set({
+                                  //   myNames.familyRequests: {
+                                  //     myEmail: FieldValue.delete()
+                                  //   },
+                                  //   myNames.family: {
+                                  //     myEmail: {
+                                  //       myNames.name: myUser.docs[0]
+                                  //           [myNames.name]
+                                  //     }
+                                  //   }
+                                  // }, SetOptions(merge: true));
+                                  await acceptRequest.commit();
+                                  FirebaseFunctions functions =
+                                      FirebaseFunctions.instance;
+                                  HttpsCallable notifyNewFamilyMember =
+                                      FirebaseFunctions.instanceFor(
+                                              region: "europe-west2")
+                                          .httpsCallable(
+                                              'notifyNewFamilyMember');
+                                  try {
+                                    Map data = {
+                                      'token': (requestedUser.docs[0].data()!
+                                          as Map)[myNames.token],
+                                      myNames.name: (myUser.docs[0].data()!
+                                          as Map)[myNames.name]
+                                    };
+                                    await notifyNewFamilyMember.call(data);
+                                  } on Exception catch (e) {
+                                    print(e.toString());
+                                  }
                                 },
                                 icon: Icon(Icons.check_circle_outline_rounded)),
                           ),
