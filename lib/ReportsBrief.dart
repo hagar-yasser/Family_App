@@ -15,6 +15,48 @@ class ReportsBrief extends StatefulWidget {
 
 class _ReportsBriefState extends State<ReportsBrief> {
   ScrollController _scrollController = ScrollController();
+  DateTime newEndTime(DateTime timeAdded, String reportRate) {
+    DateTime res = DateTime.now().toUtc();
+    timeAdded = timeAdded.toUtc();
+
+    if (reportRate == 'Daily') {
+      DateTime nextInstanceOftimeAddedFromHours = DateTime.utc(
+          res.year,
+          res.month,
+          res.day,
+          timeAdded.hour,
+          timeAdded.minute,
+          timeAdded.second);
+      if (nextInstanceOftimeAddedFromHours.isBefore(res)) {
+        print('hello');
+        nextInstanceOftimeAddedFromHours =
+            nextInstanceOftimeAddedFromHours.add(Duration(days: 1));
+      }
+      res = nextInstanceOftimeAddedFromHours;
+    } else {
+      var daysTilltimeAddedOfDay = timeAdded.weekday - res.weekday;
+      if (daysTilltimeAddedOfDay < 0) {
+        daysTilltimeAddedOfDay += 7;
+      }
+      //NEXT MONDAY FOR EXAMPLE
+      DateTime nextInstanceOfDayofTimeAdded =
+          res = res.add(Duration(days: daysTilltimeAddedOfDay));
+      DateTime nextInstanceofTimeAddedFromDay = DateTime.utc(
+          nextInstanceOfDayofTimeAdded.year,
+          nextInstanceOfDayofTimeAdded.month,
+          nextInstanceOfDayofTimeAdded.day,
+          timeAdded.hour,
+          timeAdded.minute,
+          timeAdded.second);
+      if (res.isBefore(nextInstanceofTimeAddedFromDay)) {
+        nextInstanceofTimeAddedFromDay =
+            nextInstanceofTimeAddedFromDay.add(Duration(days: 7));
+      }
+      res = nextInstanceofTimeAddedFromDay;
+    }
+    return res;
+  }
+
   Future<DocumentSnapshot> checkActivitiesStates(
       FirebaseFirestore firestore, String email) async {
     QuerySnapshot myQuery = await firestore
@@ -46,37 +88,82 @@ class _ReportsBriefState extends State<ReportsBrief> {
               .collection(myNames.activitiesTable)
               .doc(activitiesIDs[i])
               .get();
+
+          DateTime nextEndTime = newEndTime(
+              activities[activitiesIDs[i]][myNames.timeAdded].toDate(),
+              activities[activitiesIDs[i]][myNames.reportRate]);
+          Map activityOriginalMap = (activityOriginal.data() as Map);
+          activityOriginalMap[myNames.endTime] = nextEndTime;
+          //SET MY END TIME ONLY AND POINTS =0
+          //SET ACTIVITY ORIGINAL ENDTIME
+          //
           WriteBatch updateReports = firestore.batch();
+          //SET NEW END TIME AND POINTS WITH 0 INSTEAD OF DELETING
           updateReports.set(
               firestore.collection(myNames.usersTable).doc(id),
               {
-                myNames.activities: {activitiesIDs[i]: FieldValue.delete()},
+                myNames.activities: {
+                  activitiesIDs[i]: {
+                    myNames.endTime: nextEndTime,
+                    myNames.members: {
+                      email: {myNames.points: 0}
+                    },
+                    myNames.lastDone: null
+                  }
+                },
+                // myNames.reports: {
+                //   activitiesIDs[i]: (activityOriginal.data() as Map)
+                // }
               },
               SetOptions(merge: true));
           // await firestore.collection(myNames.usersTable).doc(id).set({
-          //   myNames.activities: {activitiesIDs[i]: FieldValue.delete()}
-          // }, SetOptions(merge: true));
-          print(
-              "activity original data: " + activityOriginal.data().toString());
-          updateReports.set(
-              firestore.collection(myNames.usersTable).doc(id),
-              {
-                myNames.reports: {
-                  activitiesIDs[i]: (activityOriginal.data() as Map)
-                }
-              },
-              SetOptions(merge: true));
-          // await firestore.collection(myNames.usersTable).doc(id).set({
+          //   myNames.activities: {
+          //     activitiesIDs[i]: {
+          //       myNames.endTime: nextEndTime,
+          //       myNames.members: {
+          //         email: {myNames.points: 0}
+          //       },
+          //       //myNames.lastDone: null
+          //     }
+          //   },
           //   myNames.reports: {
           //     activitiesIDs[i]: (activityOriginal.data() as Map)
           //   }
           // }, SetOptions(merge: true));
+          // // await firestore.collection(myNames.usersTable).doc(id).set({
+          // //   myNames.activities: {activitiesIDs[i]: FieldValue.delete()}
+          // // }, SetOptions(merge: true));
+          // print(
+          //     "activity original data: " + activityOriginal.data().toString());
+          //SET REPORTS WITH PAST END TIME NOT THE NEW
+          updateReports.set(
+              firestore.collection(myNames.usersTable).doc(id),
+              {
+                myNames.reports: {activitiesIDs[i]: activityOriginalMap}
+              },
+              SetOptions(merge: true));
+          // // await firestore.collection(myNames.usersTable).doc(id).set({
+          // //   myNames.reports: {
+          // //     activitiesIDs[i]: (activityOriginal.data() as Map)
+          // //   }
+          // // }, SetOptions(merge: true));
           updateReports.set(
               firestore
                   .collection(myNames.activitiesTable)
                   .doc(activitiesIDs[i]),
               {
-                myNames.reportsSent: {myDoc[myNames.email]: true}
+                myNames.reportsSent: {myDoc[myNames.email]: true},
+              },
+              SetOptions(merge: true));
+          //SET NEW END TIME IN ORIGINAL ACTIVITY
+          updateReports.set(
+              firestore
+                  .collection(myNames.activitiesTable)
+                  .doc(activitiesIDs[i]),
+              {
+                myNames.endTime:
+                    // (activityOriginal.data() as Map)[myNames.endTime]
+                    nextEndTime,
               },
               SetOptions(merge: true));
           // await firestore
@@ -158,6 +245,21 @@ class _ReportsBriefState extends State<ReportsBrief> {
                             const Divider(),
                         itemCount: reportsIDs.length,
                         itemBuilder: (BuildContext context, int index) {
+                          int maxPoints = 0;
+                          DateTime timeAdded = (reports![reportsIDs[index]]
+                                  [myNames.timeAdded])
+                              .toDate();
+                          DateTime endTime = (reports[reportsIDs[index]]
+                                  [myNames.endTime])
+                              .toDate();
+                          if (reports[reportsIDs[index]]
+                                  [myNames.activityRate] ==
+                              'Daily') {
+                            maxPoints = endTime.difference(timeAdded).inDays;
+                          } else {
+                            maxPoints =
+                                endTime.difference(timeAdded).inDays ~/ 7;
+                          }
                           return Container(
                             height: 200,
                             width: 300,
@@ -185,7 +287,7 @@ class _ReportsBriefState extends State<ReportsBrief> {
                                                 children: [
                                                   Expanded(
                                                     child: Text(
-                                                        reports![reportsIDs[
+                                                        reports[reportsIDs[
                                                                 index]]
                                                             [myNames.name],
                                                         overflow: TextOverflow
@@ -195,20 +297,16 @@ class _ReportsBriefState extends State<ReportsBrief> {
                                                   ),
                                                   Text(
                                                       (reports[reportsIDs[index]]
-                                                                          [myNames.members]
-                                                                      [myEmail][
+                                                                          [
+                                                                          myNames
+                                                                              .members]
+                                                                      [myEmail]
+                                                                  [
                                                                   myNames
                                                                       .points])
                                                               .toString() +
                                                           "/" +
-                                                          (reports[reportsIDs[index]][myNames.reportRate] ==
-                                                                      reports[reportsIDs[index]]
-                                                                          [
-                                                                          myNames
-                                                                              .activityRate]
-                                                                  ? 1
-                                                                  : 7)
-                                                              .toString(),
+                                                          maxPoints.toString(),
                                                       style: TextStyle(
                                                           color:
                                                               Color(0xffAACDBE),

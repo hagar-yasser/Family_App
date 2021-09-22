@@ -406,14 +406,22 @@ class _ActivityBriefState extends State<ActivityBrief> {
                   "A problem occurred when updating your points. Please check your internet connectivity")));
         return;
       }
+      final activityOriginal = await firestore
+          .collection(myNames.activitiesTable)
+          .doc(activityID)
+          .get();
+      var originalPoints =
+          activityOriginal.data()![myNames.members][email][myNames.points];
+      originalPoints += 1;
       WriteBatch updatePoints = firestore.batch();
+      //UPDATE THE POINTS IN THE ACTIVITY TO BE THE ORIGINAL POINTS +1  TO ALLOW
+      //AUTOMATIC REPETITION OF THE ACTIVITY WHILE SAVING THE TOTAL AGGREGATED POINTS
+      //IN THE ORIGINAL ACTIVITY
       updatePoints.set(
           firestore.collection(myNames.activitiesTable).doc(activityID),
           {
             myNames.members: {
-              email: {
-                myNames.points: activity[myNames.members][email][myNames.points]
-              }
+              email: {myNames.points: originalPoints}
             }
           },
           SetOptions(merge: true));

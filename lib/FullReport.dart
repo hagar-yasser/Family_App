@@ -20,6 +20,14 @@ class FullReport extends StatelessWidget {
     final ScrollController _controllerOne = ScrollController();
     User? user = Provider.of<Auth>(context).getCurrentUser();
     String myEmail = user!.email!;
+    int maxPoints = 0;
+    DateTime timeAdded = (activity[myNames.timeAdded]).toDate();
+    DateTime endTime = (activity[myNames.endTime]).toDate();
+    if (activity[myNames.activityRate] == 'Daily') {
+      maxPoints = endTime.difference(timeAdded).inDays;
+    } else {
+      maxPoints = endTime.difference(timeAdded).inDays ~/ 7;
+    }
     return Scaffold(
       //backgroundColor: Colors.white,
       body: Scrollbar(
@@ -87,10 +95,12 @@ class FullReport extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: ListOfMembersReport(
                     activity[myNames.members],
-                    (activity[myNames.reportRate] ==
-                            activity[myNames.activityRate]
-                        ? 1
-                        : 7)),
+                    //CHANGE MAX POINTS TO BE THE NUMBER OF OCCURENCES OF THE ACTIVITY
+                    // (activity[myNames.reportRate] ==
+                    //         activity[myNames.activityRate]
+                    //     ? 1
+                    //     : 7)
+                    maxPoints),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
