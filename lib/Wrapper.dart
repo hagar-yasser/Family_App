@@ -98,12 +98,14 @@ class _UserAuthToUserDBState extends State<UserAuthToUserDB> {
           .doc(user.uid)
           .set({myNames.token: token}, SetOptions(merge: true));
     } else {
-      if (!userAddedToDatabase.data()!.containsKey(myNames.token))
+      if (!userAddedToDatabase.data()!.containsKey(myNames.token) ||
+          userAddedToDatabase.data()![myNames.token] == null) {
         print('old user no token');
-      await firestore
-          .collection(myNames.usersTable)
-          .doc(user.uid)
-          .set({myNames.token: token}, SetOptions(merge: true));
+        await firestore
+            .collection(myNames.usersTable)
+            .doc(user.uid)
+            .set({myNames.token: token}, SetOptions(merge: true));
+      }
     }
   }
 

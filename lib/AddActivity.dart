@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:family_app/MyRectangularButton.dart';
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/authorization/Auth.dart';
 import 'package:family_app/myNames.dart';
@@ -289,17 +290,25 @@ class _AddActivityState extends State<AddActivity> {
                                 myNames.timeAdded: timeAdded,
                                 myNames.endTime: endTime
                               };
-
-                              final internetCheck = await firestore
-                                  .collection(myNames.usersTable)
-                                  .doc(user!.uid)
-                                  .get();
-                              if (internetCheck.metadata.isFromCache) {
+                              bool err = false;
+                              late final internetCheck;
+                              try {
+                                internetCheck = await firestore
+                                    .collection(myNames.usersTable)
+                                    .doc(user!.uid)
+                                    .get();
+                              } on Exception catch (e) {
+                                err = true;
+                                _showErrorDialog(context,
+                                    'A problem occured when loading your info. Please check your internet connection.');
+                              }
+                              if (err || internetCheck.metadata.isFromCache) {
                                 if (this.mounted)
                                   ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                           content: Text(
                                               "A problem occurred when adding the activity. Please check your internet connectivity")));
+                                if (this.mounted) Navigator.pop(context);
                               } else {
                                 WriteBatch addActivity =
                                     FirebaseFirestore.instance.batch();
@@ -312,14 +321,23 @@ class _AddActivityState extends State<AddActivity> {
                                 //     .add(newActivity);
                                 final activityID = newActivityRef.id;
                                 final List<String?> tokens = [];
+                                bool err = false;
                                 for (MapEntry<dynamic, dynamic> m
                                     in _members.entries) {
                                   var key = m.key;
-                                  var member = await firestore
-                                      .collection(myNames.usersTable)
-                                      .where(myNames.email, isEqualTo: key)
-                                      .limit(1)
-                                      .get();
+                                  var member;
+                                  try {
+                                    member = await firestore
+                                        .collection(myNames.usersTable)
+                                        .where(myNames.email, isEqualTo: key)
+                                        .limit(1)
+                                        .get();
+                                  } on Exception catch (e) {
+                                    err = true;
+                                    _showErrorDialog(context,
+                                        'A problem occured when loading the activity members info. Please check your internet connection.');
+                                    break;
+                                  }
                                   DocumentSnapshot myMember = member.docs[0];
                                   //Add its token to token array that will be sent to the cloud
                                   //function that will send notifications to other users
@@ -348,29 +366,36 @@ class _AddActivityState extends State<AddActivity> {
                                   //   }
                                   // }, SetOptions(merge: true));
                                 }
-                                await addActivity.commit();
+                                if (!err) {
+                                  try {
+                                    await addActivity.commit();
+                                  } on Exception catch (e) {
+                                    _showErrorDialog(context,
+                                        'An error occured when adding the activity, check your internet connection.');
+                                  }
 
-                                print(tokens.toString());
-                                FirebaseFunctions functions =
-                                    FirebaseFunctions.instance;
-                                HttpsCallable notifyMembersNewActivity =
-                                    FirebaseFunctions.instanceFor(
-                                            region: "europe-west2")
-                                        .httpsCallable(
-                                            'notifyMembersNewActivity');
-                                try {
-                                  Map data = {
-                                    "name": user.displayName,
-                                    'activityName': newActivity[myNames.name],
-                                    'tokens': tokens
-                                  };
-                                  await notifyMembersNewActivity.call(data);
-                                } on Exception catch (e) {
-                                  print(e.toString());
+                                  print(tokens.toString());
+                                  FirebaseFunctions functions =
+                                      FirebaseFunctions.instance;
+                                  HttpsCallable notifyMembersNewActivity =
+                                      FirebaseFunctions.instanceFor(
+                                              region: "europe-west2")
+                                          .httpsCallable(
+                                              'notifyMembersNewActivity');
+                                  try {
+                                    Map data = {
+                                      "name": user!.displayName,
+                                      'activityName': newActivity[myNames.name],
+                                      'tokens': tokens
+                                    };
+                                    await notifyMembersNewActivity.call(data);
+                                  } on Exception catch (e) {
+                                    print(e.toString());
+                                  }
                                 }
                               }
                               //call the cloud function that will send notifications
-                              if (this.mounted) Navigator.pop(context);
+
                             }
                           },
                           child: Text("Add")),
@@ -382,6 +407,32 @@ class _AddActivityState extends State<AddActivity> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String title) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 24),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[],
+            ),
+          ),
+          actions: <Widget>[
+            MyButton(
+                action: () {
+                  Navigator.of(context).pop();
+                },
+                text: 'OK'),
+          ],
+        );
+      },
     );
   }
 }

@@ -97,87 +97,94 @@ class _ProfileState extends State<Profile> {
       _showMessageDialog(context, "please enter a valid email", "");
       return;
     } else {
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      email = email.toLowerCase();
-      String myEmail = user!.email!;
-
-      QuerySnapshot myUser = await firestore
-          .collection(myNames.usersTable)
-          .where(myNames.email, isEqualTo: myEmail)
-          .limit(1)
-          .get();
-      QuerySnapshot requestedUser = await firestore
-          .collection(myNames.usersTable)
-          .where(myNames.email, isEqualTo: email)
-          .limit(1)
-          .get();
-      if (requestedUser.docs.length == 0) {
-        _showMessageDialog(
-            context, "There is no registered user with this email", "");
-        return;
-      }
-      Map family = myUser.docs[0][myNames.family];
-      if (family[email] != null) {
-        _showMessageDialog(context, "You are already family members", "");
-        return;
-      }
-      Map familyRequests = myUser.docs[0][myNames.familyRequests];
-      if (familyRequests[email] != null ||
-          (familyRequests[myEmail] != null &&
-              familyRequests[myEmail][email] != null)) {
-        _showMessageDialog(context, "Family Request already sent", "");
-        return;
-      }
-      print('hello');
-      print((requestedUser.docs[0].data() as Map)[myNames.familyRequests]
-          [(requestedUser.docs[0].data() as Map)[myNames.email]]);
-      WriteBatch addRequest = firestore.batch();
-      addRequest.set(
-          firestore
-              .collection(myNames.usersTable)
-              .doc(requestedUser.docs[0].id),
-          {
-            myNames.familyRequests: {
-              email: {myEmail: 'pending'}
-            }
-          },
-          SetOptions(merge: true));
-      // await firestore
-      //     .collection(myNames.usersTable)
-      //     .doc(requestedUser.docs[0].id)
-      //     .set({
-      //   myNames.familyRequests: {
-      //     email: {myEmail: 'pending'}
-      //   }
-      // }, SetOptions(merge: true));
-      addRequest.set(
-          firestore.collection(myNames.usersTable).doc(myUser.docs[0].id),
-          {
-            myNames.familyRequests: {
-              email: {myEmail: 'pending'}
-            }
-          },
-          SetOptions(merge: true));
-      // await firestore
-      //     .collection(myNames.usersTable)
-      //     .doc(myUser.docs[0].id)
-      //     .set({
-      //   myNames.familyRequests: {
-      //     email: {myEmail: 'pending'}
-      //   }
-      // }, SetOptions(merge: true));
-      await addRequest.commit();
-      FirebaseFunctions functions = FirebaseFunctions.instance;
-      HttpsCallable notifyNewFamilyRequest =
-          FirebaseFunctions.instanceFor(region: "europe-west2")
-              .httpsCallable('notifyNewFamilyRequest');
       try {
-        Map data = {
-          'token': (requestedUser.docs[0].data()! as Map)[myNames.token]
-        };
-        await notifyNewFamilyRequest.call(data);
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        email = email.toLowerCase();
+        String myEmail = user!.email!;
+
+        QuerySnapshot myUser = await firestore
+            .collection(myNames.usersTable)
+            .where(myNames.email, isEqualTo: myEmail)
+            .limit(1)
+            .get();
+        QuerySnapshot requestedUser = await firestore
+            .collection(myNames.usersTable)
+            .where(myNames.email, isEqualTo: email)
+            .limit(1)
+            .get();
+        if (requestedUser.docs.length == 0) {
+          _showMessageDialog(
+              context, "There is no registered user with this email", "");
+          return;
+        }
+        Map family = myUser.docs[0][myNames.family];
+        if (family[email] != null) {
+          _showMessageDialog(context, "You are already family members", "");
+          return;
+        }
+        Map familyRequests = myUser.docs[0][myNames.familyRequests];
+        if (familyRequests[email] != null ||
+            (familyRequests[myEmail] != null &&
+                familyRequests[myEmail][email] != null)) {
+          _showMessageDialog(context, "Family Request already sent", "");
+          return;
+        }
+        print('hello');
+        print((requestedUser.docs[0].data() as Map)[myNames.familyRequests]
+            [(requestedUser.docs[0].data() as Map)[myNames.email]]);
+        WriteBatch addRequest = firestore.batch();
+        addRequest.set(
+            firestore
+                .collection(myNames.usersTable)
+                .doc(requestedUser.docs[0].id),
+            {
+              myNames.familyRequests: {
+                email: {myEmail: 'pending'}
+              }
+            },
+            SetOptions(merge: true));
+        // await firestore
+        //     .collection(myNames.usersTable)
+        //     .doc(requestedUser.docs[0].id)
+        //     .set({
+        //   myNames.familyRequests: {
+        //     email: {myEmail: 'pending'}
+        //   }
+        // }, SetOptions(merge: true));
+        addRequest.set(
+            firestore.collection(myNames.usersTable).doc(myUser.docs[0].id),
+            {
+              myNames.familyRequests: {
+                email: {myEmail: 'pending'}
+              }
+            },
+            SetOptions(merge: true));
+        // await firestore
+        //     .collection(myNames.usersTable)
+        //     .doc(myUser.docs[0].id)
+        //     .set({
+        //   myNames.familyRequests: {
+        //     email: {myEmail: 'pending'}
+        //   }
+        // }, SetOptions(merge: true));
+        await addRequest.commit();
+        FirebaseFunctions functions = FirebaseFunctions.instance;
+        HttpsCallable notifyNewFamilyRequest =
+            FirebaseFunctions.instanceFor(region: "europe-west2")
+                .httpsCallable('notifyNewFamilyRequest');
+        try {
+          Map data = {
+            'token': (requestedUser.docs[0].data()! as Map)[myNames.token]
+          };
+          await notifyNewFamilyRequest.call(data);
+        } on Exception catch (e) {
+          print(e.toString());
+        }
       } on Exception catch (e) {
-        print(e.toString());
+        _showMessageDialog(
+            context,
+            'An error occured when adding request, check your internet connection.',
+            '');
       }
     }
   }

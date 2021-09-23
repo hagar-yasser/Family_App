@@ -265,9 +265,12 @@ class FamilyRequests extends StatelessWidget {
           ? Center(
               child: Card(
                 elevation: 8,
-                child: Text(
-                  "There are no family requests",
-                  style: TextStyle(fontSize: 20),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "There are no family requests",
+                    style: TextStyle(fontSize: 20),
+                  ),
                 ),
               ),
             )
@@ -295,61 +298,70 @@ class FamilyRequests extends StatelessWidget {
                             child: IconButton(
                                 color: Colors.redAccent,
                                 onPressed: () async {
-                                  QuerySnapshot myUser = await firestore
-                                      .collection(myNames.usersTable)
-                                      .where(myNames.email, isEqualTo: myEmail)
-                                      .limit(1)
-                                      .get();
-                                  QuerySnapshot requestedUser = await firestore
-                                      .collection(myNames.usersTable)
-                                      .where(myNames.email,
-                                          isEqualTo: familyRequestsIDs[index])
-                                      .limit(1)
-                                      .get();
-                                  WriteBatch rejectRequest = firestore.batch();
-                                  rejectRequest.set(
-                                      firestore
-                                          .collection(myNames.usersTable)
-                                          .doc(myUser.docs[0].id),
-                                      {
-                                        myNames.familyRequests: {
-                                          myEmail: {
-                                            familyRequestsIDs[index]:
-                                                FieldValue.delete()
+                                  try {
+                                    QuerySnapshot myUser = await firestore
+                                        .collection(myNames.usersTable)
+                                        .where(myNames.email,
+                                            isEqualTo: myEmail)
+                                        .limit(1)
+                                        .get();
+                                    QuerySnapshot requestedUser =
+                                        await firestore
+                                            .collection(myNames.usersTable)
+                                            .where(myNames.email,
+                                                isEqualTo:
+                                                    familyRequestsIDs[index])
+                                            .limit(1)
+                                            .get();
+                                    WriteBatch rejectRequest =
+                                        firestore.batch();
+                                    rejectRequest.set(
+                                        firestore
+                                            .collection(myNames.usersTable)
+                                            .doc(myUser.docs[0].id),
+                                        {
+                                          myNames.familyRequests: {
+                                            myEmail: {
+                                              familyRequestsIDs[index]:
+                                                  FieldValue.delete()
+                                            }
                                           }
-                                        }
-                                      },
-                                      SetOptions(merge: true));
-                                  // await firestore
-                                  //     .collection(myNames.usersTable)
-                                  //     .doc(myUser.docs[0].id)
-                                  //     .set({
-                                  //   myNames.familyRequests: {
-                                  //     myEmail: {
-                                  //       familyRequestsIDs[index]:
-                                  //           FieldValue.delete()
-                                  //     }
-                                  //   }
-                                  // }, SetOptions(merge: true));
-                                  rejectRequest.set(
-                                      firestore
-                                          .collection(myNames.usersTable)
-                                          .doc(requestedUser.docs[0].id),
-                                      {
-                                        myNames.familyRequests: {
-                                          myEmail: FieldValue.delete()
-                                        }
-                                      },
-                                      SetOptions(merge: true));
-                                  // await firestore
-                                  //     .collection(myNames.usersTable)
-                                  //     .doc(requestedUser.docs[0].id)
-                                  //     .set({
-                                  //   myNames.familyRequests: {
-                                  //     myEmail: FieldValue.delete()
-                                  //   }
-                                  // }, SetOptions(merge: true));
-                                  await rejectRequest.commit();
+                                        },
+                                        SetOptions(merge: true));
+                                    // await firestore
+                                    //     .collection(myNames.usersTable)
+                                    //     .doc(myUser.docs[0].id)
+                                    //     .set({
+                                    //   myNames.familyRequests: {
+                                    //     myEmail: {
+                                    //       familyRequestsIDs[index]:
+                                    //           FieldValue.delete()
+                                    //     }
+                                    //   }
+                                    // }, SetOptions(merge: true));
+                                    rejectRequest.set(
+                                        firestore
+                                            .collection(myNames.usersTable)
+                                            .doc(requestedUser.docs[0].id),
+                                        {
+                                          myNames.familyRequests: {
+                                            myEmail: FieldValue.delete()
+                                          }
+                                        },
+                                        SetOptions(merge: true));
+                                    // await firestore
+                                    //     .collection(myNames.usersTable)
+                                    //     .doc(requestedUser.docs[0].id)
+                                    //     .set({
+                                    //   myNames.familyRequests: {
+                                    //     myEmail: FieldValue.delete()
+                                    //   }
+                                    // }, SetOptions(merge: true));
+                                    await rejectRequest.commit();
+                                  } on Exception catch (e) {
+                                    _showErrorDialog(context,
+                                        'A problem occured when rejecting the request, check your intenet connection');
+                                  }
                                 },
                                 icon: Icon(Icons.cancel_outlined)),
                           ),
@@ -358,102 +370,111 @@ class FamilyRequests extends StatelessWidget {
                             child: IconButton(
                                 color: Color(0xffEA907A),
                                 onPressed: () async {
-                                  QuerySnapshot myUser = await firestore
-                                      .collection(myNames.usersTable)
-                                      .where(myNames.email, isEqualTo: myEmail)
-                                      .limit(1)
-                                      .get();
-                                  QuerySnapshot requestedUser = await firestore
-                                      .collection(myNames.usersTable)
-                                      .where(myNames.email,
-                                          isEqualTo: familyRequestsIDs[index])
-                                      .limit(1)
-                                      .get();
-                                  WriteBatch acceptRequest = firestore.batch();
-                                  acceptRequest.set(
-                                      firestore
-                                          .collection(myNames.usersTable)
-                                          .doc(myUser.docs[0].id),
-                                      {
-                                        myNames.familyRequests: {
-                                          myEmail: {
-                                            familyRequestsIDs[index]:
-                                                FieldValue.delete()
-                                          }
-                                        },
-                                        myNames.family: {
-                                          familyRequestsIDs[index]: {
-                                            myNames.name: requestedUser.docs[0]
-                                                [myNames.name]
-                                          }
-                                        }
-                                      },
-                                      SetOptions(merge: true));
-                                  // await firestore
-                                  //     .collection(myNames.usersTable)
-                                  //     .doc(myUser.docs[0].id)
-                                  //     .set({
-                                  //   myNames.familyRequests: {
-                                  //     myEmail: {
-                                  //       familyRequestsIDs[index]:
-                                  //           FieldValue.delete()
-                                  //     }
-                                  //   },
-                                  //   myNames.family: {
-                                  //     familyRequestsIDs[index]: {
-                                  //       myNames.name: requestedUser.docs[0]
-                                  //           [myNames.name]
-                                  //     }
-                                  //   }
-                                  // }, SetOptions(merge: true));
-                                  acceptRequest.set(
-                                      firestore
-                                          .collection(myNames.usersTable)
-                                          .doc(requestedUser.docs[0].id),
-                                      {
-                                        myNames.familyRequests: {
-                                          myEmail: FieldValue.delete()
-                                        },
-                                        myNames.family: {
-                                          myEmail: {
-                                            myNames.name: myUser.docs[0]
-                                                [myNames.name]
-                                          }
-                                        }
-                                      },
-                                      SetOptions(merge: true));
-                                  // await firestore
-                                  //     .collection(myNames.usersTable)
-                                  //     .doc(requestedUser.docs[0].id)
-                                  //     .set({
-                                  //   myNames.familyRequests: {
-                                  //     myEmail: FieldValue.delete()
-                                  //   },
-                                  //   myNames.family: {
-                                  //     myEmail: {
-                                  //       myNames.name: myUser.docs[0]
-                                  //           [myNames.name]
-                                  //     }
-                                  //   }
-                                  // }, SetOptions(merge: true));
-                                  await acceptRequest.commit();
-                                  FirebaseFunctions functions =
-                                      FirebaseFunctions.instance;
-                                  HttpsCallable notifyNewFamilyMember =
-                                      FirebaseFunctions.instanceFor(
-                                              region: "europe-west2")
-                                          .httpsCallable(
-                                              'notifyNewFamilyMember');
                                   try {
-                                    Map data = {
-                                      'token': (requestedUser.docs[0].data()!
-                                          as Map)[myNames.token],
-                                      myNames.name: (myUser.docs[0].data()!
-                                          as Map)[myNames.name]
-                                    };
-                                    await notifyNewFamilyMember.call(data);
+                                    QuerySnapshot myUser = await firestore
+                                        .collection(myNames.usersTable)
+                                        .where(myNames.email,
+                                            isEqualTo: myEmail)
+                                        .limit(1)
+                                        .get();
+                                    QuerySnapshot requestedUser =
+                                        await firestore
+                                            .collection(myNames.usersTable)
+                                            .where(myNames.email,
+                                                isEqualTo:
+                                                    familyRequestsIDs[index])
+                                            .limit(1)
+                                            .get();
+                                    WriteBatch acceptRequest =
+                                        firestore.batch();
+                                    acceptRequest.set(
+                                        firestore
+                                            .collection(myNames.usersTable)
+                                            .doc(myUser.docs[0].id),
+                                        {
+                                          myNames.familyRequests: {
+                                            myEmail: {
+                                              familyRequestsIDs[index]:
+                                                  FieldValue.delete()
+                                            }
+                                          },
+                                          myNames.family: {
+                                            familyRequestsIDs[index]: {
+                                              myNames.name: requestedUser
+                                                  .docs[0][myNames.name]
+                                            }
+                                          }
+                                        },
+                                        SetOptions(merge: true));
+                                    // await firestore
+                                    //     .collection(myNames.usersTable)
+                                    //     .doc(myUser.docs[0].id)
+                                    //     .set({
+                                    //   myNames.familyRequests: {
+                                    //     myEmail: {
+                                    //       familyRequestsIDs[index]:
+                                    //           FieldValue.delete()
+                                    //     }
+                                    //   },
+                                    //   myNames.family: {
+                                    //     familyRequestsIDs[index]: {
+                                    //       myNames.name: requestedUser.docs[0]
+                                    //           [myNames.name]
+                                    //     }
+                                    //   }
+                                    // }, SetOptions(merge: true));
+                                    acceptRequest.set(
+                                        firestore
+                                            .collection(myNames.usersTable)
+                                            .doc(requestedUser.docs[0].id),
+                                        {
+                                          myNames.familyRequests: {
+                                            myEmail: FieldValue.delete()
+                                          },
+                                          myNames.family: {
+                                            myEmail: {
+                                              myNames.name: myUser.docs[0]
+                                                  [myNames.name]
+                                            }
+                                          }
+                                        },
+                                        SetOptions(merge: true));
+                                    // await firestore
+                                    //     .collection(myNames.usersTable)
+                                    //     .doc(requestedUser.docs[0].id)
+                                    //     .set({
+                                    //   myNames.familyRequests: {
+                                    //     myEmail: FieldValue.delete()
+                                    //   },
+                                    //   myNames.family: {
+                                    //     myEmail: {
+                                    //       myNames.name: myUser.docs[0]
+                                    //           [myNames.name]
+                                    //     }
+                                    //   }
+                                    // }, SetOptions(merge: true));
+                                    await acceptRequest.commit();
+                                    FirebaseFunctions functions =
+                                        FirebaseFunctions.instance;
+                                    HttpsCallable notifyNewFamilyMember =
+                                        FirebaseFunctions.instanceFor(
+                                                region: "europe-west2")
+                                            .httpsCallable(
+                                                'notifyNewFamilyMember');
+                                    try {
+                                      Map data = {
+                                        'token': (requestedUser.docs[0].data()!
+                                            as Map)[myNames.token],
+                                        myNames.name: (myUser.docs[0].data()!
+                                            as Map)[myNames.name]
+                                      };
+                                      await notifyNewFamilyMember.call(data);
+                                    } on Exception catch (e) {
+                                      print(e.toString());
+                                    }
                                   } on Exception catch (e) {
-                                    print(e.toString());
+                                    _showErrorDialog(context,
+                                        'A problem occured when accepting the request, check your internet connection.');
                                   }
                                 },
                                 icon: Icon(Icons.check_circle_outline_rounded)),
@@ -467,6 +488,32 @@ class FamilyRequests extends StatelessWidget {
                     const Divider(),
               ),
             ),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String title) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 24),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[],
+            ),
+          ),
+          actions: <Widget>[
+            MyButton(
+                action: () {
+                  Navigator.of(context).pop();
+                },
+                text: 'OK'),
+          ],
+        );
+      },
     );
   }
 }

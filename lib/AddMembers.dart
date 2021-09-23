@@ -124,9 +124,12 @@ class _AddMembersState extends State<AddMembers> {
                         ? Center(
                             child: Card(
                               elevation: 8,
-                              child: Text(
-                                "There are no family members. Try to send family requests to your family members from your profile page.",
-                                style: TextStyle(fontSize: 20),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "There are no family members. Try to send family requests to your family members from your profile page.",
+                                  style: TextStyle(fontSize: 20),
+                                ),
                               ),
                             ),
                           )

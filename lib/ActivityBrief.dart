@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:family_app/MyRectangularButton.dart';
 import 'package:family_app/MyRoundedLoadingButton.dart';
 import 'package:family_app/MySmallRoundedButton.dart';
 import 'package:family_app/authorization/Auth.dart';
@@ -241,16 +242,29 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                             docSnapshot);
                                                       } else {
                                                         //REMOVE ME FROM THE LIST OF MEMBERS OF THIS ACTIVITY IN THE ACTIVITIES TABLE
-                                                        final internetCheck =
-                                                            await firestore
-                                                                .collection(myNames
-                                                                    .usersTable)
-                                                                .doc(docSnapshot
-                                                                    .data!.id)
-                                                                .get();
-                                                        if (internetCheck
-                                                            .metadata
-                                                            .isFromCache) {
+                                                        bool err = false;
+                                                        late final internetCheck;
+                                                        try {
+                                                          internetCheck =
+                                                              await firestore
+                                                                  .collection(
+                                                                      myNames
+                                                                          .usersTable)
+                                                                  .doc(
+                                                                      docSnapshot
+                                                                          .data!
+                                                                          .id)
+                                                                  .get();
+                                                        } on Exception catch (e) {
+                                                          err = true;
+                                                          _showErrorDialog(
+                                                              context,
+                                                              'A problem occured when loading your data, check your internet connection.');
+                                                        }
+                                                        if (err ||
+                                                            internetCheck
+                                                                .metadata
+                                                                .isFromCache) {
                                                           if (this.mounted)
                                                             ScaffoldMessenger
                                                                     .of(context)
@@ -339,7 +353,14 @@ class _ActivityBriefState extends State<ActivityBrief> {
                                                           //         SetOptions(
                                                           //             merge:
                                                           //                 true));
-                                                          quitActivity.commit();
+                                                          try {
+                                                            await quitActivity
+                                                                .commit();
+                                                          } on Exception catch (e) {
+                                                            _showErrorDialog(
+                                                                context,
+                                                                'A problem occured when quitting the activity, check your internet connection');
+                                                          }
                                                         }
                                                       }
                                                     }
@@ -378,6 +399,32 @@ class _ActivityBriefState extends State<ActivityBrief> {
             }));
   }
 
+  void _showErrorDialog(BuildContext context, String title) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 24),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[],
+            ),
+          ),
+          actions: <Widget>[
+            MyButton(
+                action: () {
+                  Navigator.of(context).pop();
+                },
+                text: 'OK'),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> checkActivityDone(Map activity, activityID, email,
       FirebaseFirestore firestore, docSnapshot) async {
     DateTime clickedTime = DateTime.now().toUtc();
@@ -395,21 +442,41 @@ class _ActivityBriefState extends State<ActivityBrief> {
       activity[myNames.members][email][myNames.points] = previousPoints + 1;
       activity[myNames.lastDone] = clickedTime;
       //UPDATE THE ACTIVITY.ID IN THE ACTIVITIES TABLE WITH MY POINTS
-      final internetCheck = await firestore
-          .collection(myNames.usersTable)
-          .doc(docSnapshot.data!.id)
-          .get();
-      if (internetCheck.metadata.isFromCache) {
+      bool err = false;
+      late final internetCheck;
+      try {
+        internetCheck = await firestore
+            .collection(myNames.usersTable)
+            .doc(docSnapshot.data!.id)
+            .get();
+      } on Exception catch (e) {
+        err = true;
+        _showErrorDialog(context,
+            'A problem occured when loading your information, check your internet connection.');
+      }
+      if (err || internetCheck.metadata.isFromCache) {
         if (this.mounted)
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(
                   "A problem occurred when updating your points. Please check your internet connectivity")));
         return;
       }
-      final activityOriginal = await firestore
-          .collection(myNames.activitiesTable)
-          .doc(activityID)
-          .get();
+      late final activityOriginal;
+
+      try {
+        activityOriginal = await firestore
+            .collection(myNames.activitiesTable)
+            .doc(activityID)
+            .get();
+      } on Exception catch (e) {
+        err = true;
+        _showErrorDialog(context,
+            'A problem occured when loading this activity, please check your internet connection.');
+      }
+      if (err) {
+        return;
+      }
+
       var originalPoints =
           activityOriginal.data()![myNames.members][email][myNames.points];
       originalPoints += 1;
@@ -445,7 +512,16 @@ class _ActivityBriefState extends State<ActivityBrief> {
       //     .set({
       //   myNames.activities: {activityID: activity}
       // }, SetOptions(merge: true));
-      await updatePoints.commit();
+      try {
+        await updatePoints.commit();
+      } on Exception catch (e) {
+        err = true;
+        _showErrorDialog(context,
+            'A problem occured when updating your points, check your internet connection.');
+      }
+      if (err) {
+        return;
+      }
     } else {
       if (endTime.compareTo(clickedTime) <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
