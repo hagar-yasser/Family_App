@@ -28,8 +28,12 @@ import 'package:timezone/timezone.dart' as tz;
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-    "weekly_check_reportsWithSound", "weekly_check_reports", "weekly_check_reports",
-    importance: Importance.max, icon: "kids",sound: RawResourceAndroidNotificationSound('what_friends_are_for_507'));
+    "weekly_check_reportsWithSound2",
+    "weekly_check_reports",
+    "weekly_check_reports",
+    importance: Importance.max,
+    icon: "kids",
+    sound: RawResourceAndroidNotificationSound('what_friends_are_for_507'));
 var iOSPlatformChannelSpecifics = IOSNotificationDetails(
     presentAlert: true, presentBadge: true, presentSound: true);
 var platfromChannelSpecifics = NotificationDetails(
