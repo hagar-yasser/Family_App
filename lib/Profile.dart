@@ -97,10 +97,15 @@ class _ProfileState extends State<Profile> {
       _showMessageDialog(context, "please enter a valid email", "");
       return;
     } else {
+      if (email.toLowerCase() == user!.email) {
+        _showMessageDialog(
+            context, "You cannot send yourself a family request", "");
+        return;
+      }
       try {
         FirebaseFirestore firestore = FirebaseFirestore.instance;
         email = email.toLowerCase();
-        String myEmail = user!.email!;
+        String myEmail = user.email!;
 
         QuerySnapshot myUser = await firestore
             .collection(myNames.usersTable)

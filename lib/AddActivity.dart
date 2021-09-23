@@ -369,28 +369,30 @@ class _AddActivityState extends State<AddActivity> {
                                 if (!err) {
                                   try {
                                     await addActivity.commit();
+
+                                    print("tokens " + tokens.toString());
+                                    FirebaseFunctions functions =
+                                        FirebaseFunctions.instance;
+                                    HttpsCallable notifyMembersNewActivity =
+                                        FirebaseFunctions.instanceFor(
+                                                region: "europe-west2")
+                                            .httpsCallable(
+                                                'notifyMembersNewActivity');
+                                    try {
+                                      Map data = {
+                                        "name": user!.displayName,
+                                        'activityName':
+                                            newActivity[myNames.name],
+                                        'tokens': tokens
+                                      };
+                                      await notifyMembersNewActivity.call(data);
+                                    } on Exception catch (e) {
+                                      print(e.toString());
+                                    }
+                                    if (this.mounted) Navigator.pop(context);
                                   } on Exception catch (e) {
                                     _showErrorDialog(context,
                                         'An error occured when adding the activity, check your internet connection.');
-                                  }
-
-                                  print(tokens.toString());
-                                  FirebaseFunctions functions =
-                                      FirebaseFunctions.instance;
-                                  HttpsCallable notifyMembersNewActivity =
-                                      FirebaseFunctions.instanceFor(
-                                              region: "europe-west2")
-                                          .httpsCallable(
-                                              'notifyMembersNewActivity');
-                                  try {
-                                    Map data = {
-                                      "name": user!.displayName,
-                                      'activityName': newActivity[myNames.name],
-                                      'tokens': tokens
-                                    };
-                                    await notifyMembersNewActivity.call(data);
-                                  } on Exception catch (e) {
-                                    print(e.toString());
                                   }
                                 }
                               }
