@@ -28,7 +28,7 @@ import 'package:timezone/timezone.dart' as tz;
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-    "weekly_check_reportsWithSound2",
+    "weekly_check_reportsWithSound3",
     "weekly_check_reports",
     "weekly_check_reports",
     importance: Importance.max,
@@ -99,11 +99,11 @@ main() async {
 
 Future<void> _backgroundMessageHandler(message) async {
   print('handling background message');
-  RemoteNotification? notification = message.notification;
-  if (notification != null) {
-    flutterLocalNotificationsPlugin.show(notification.hashCode,
-        notification.title, notification.body, platfromChannelSpecifics);
-  }
+  // RemoteNotification? notification = message.notification;
+  // if (notification != null) {
+  //   flutterLocalNotificationsPlugin.show(notification.hashCode,
+  //       notification.title, notification.body, platfromChannelSpecifics);
+  // }
 }
 
 Future<void> _configureLocalTimeZone() async {
